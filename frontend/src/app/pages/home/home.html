@@ -2,6 +2,7 @@
   <div>
     <h1>Connecté</h1>
     <button routerLink="/quiz">Lancer un Quiz</button>
+    <button routerLink="/contact" class="btn-secondary">Contact</button>
     <button (click)="onLogout()">Se déconnecter</button>
   </div>
 } @else {
@@ -9,5 +10,8 @@
     <h1>Anonyme</h1>
     <p>Connecte-toi pour suivre tes scores et relever les défis.</p>
     <a routerLink="/login">Se connecter</a>
+    <div style="margin-top: 1rem;">
+      <button routerLink="/contact" class="btn-secondary">Contact</button>
+    </div>
   </div>
 }
