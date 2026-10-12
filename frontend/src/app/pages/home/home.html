@@ -1,1 +1,13 @@
-<p>home works!</p>
+@if (isLoggedIn) {
+  <div>
+    <h1>Connecté</h1>
+    <button routerLink="/quiz">Lancer un Quiz</button>
+    <button (click)="onLogout()">Se déconnecter</button>
+  </div>
+} @else {
+  <div>
+    <h1>Anonyme</h1>
+    <p>Connecte-toi pour suivre tes scores et relever les défis.</p>
+    <a routerLink="/login">Se connecter</a>
+  </div>
+}
