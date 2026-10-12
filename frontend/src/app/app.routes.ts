@@ -22,5 +22,22 @@ export const routes: Routes = [
     path: 'quizz-solo',
     loadComponent: () => import('./pages/quizz-solo/quizz-solo').then((module) => module.QuizzSolo),
   },
+  {
+    path: 'fiches',
+    loadComponent: () => import('./pages/fiches/fiches').then((module) => module.Fiches),
+  },
+  {
+    path: 'classement',
+    loadComponent: () => import('./pages/classement/classement')
+      .then((module) => module.Classement),
+  },
+  {
+    path: 'amis',
+    loadComponent: () => import('./pages/amis/amis').then((module) => module.Amis),
+  },
+  {
+    path: 'profil',
+    loadComponent: () => import('./pages/profil/profil').then((module) => module.Profil),
+  },
   { path: '**', redirectTo: 'home' },
 ];

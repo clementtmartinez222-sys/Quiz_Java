@@ -1,15 +1,5 @@
-<header class="site-header">
-  <nav class="site-nav" aria-label="Navigation principale">
-    <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      Accueil
-    </a>
-    <a routerLink="/quizz-solo" routerLinkActive="active">Quiz solo</a>
-    <a routerLink="/contact" routerLinkActive="active">Contact</a>
-    <a routerLink="/login" routerLinkActive="active">Connexion</a>
-    <a routerLink="/register" routerLinkActive="active">Inscription</a>
-  </nav>
-</header>
+<app-navbar></app-navbar>
 
-<main class="site-main">
+<main class="main-content">
   <router-outlet></router-outlet>
 </main>

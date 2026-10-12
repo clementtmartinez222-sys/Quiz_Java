@@ -1,0 +1,54 @@
+<nav class="navbar">
+
+  <div class="navbar-top">
+
+    <a routerLink="/home" class="logo">
+      <img
+        ngSrc="/logo.quizz.png"
+        width="1254"
+        height="1254"
+        alt="Logo QuizCulture"
+        class="logo-icon"
+      >
+
+      <span class="logo-text">
+    Quiz<span>Culture</span>
+  </span>
+    </a>
+
+    <div class="navbar-main">
+
+      <a routerLink="/quizz-solo" routerLinkActive="active" class="nav-item main-item">
+        <svg lucideGamepad2 class="icon"></svg>
+        <span>Quiz solo</span>
+      </a>
+
+      <a routerLink="/fiches" routerLinkActive="active" class="nav-item main-item">
+        <svg lucideBookOpen class="icon"></svg>
+        <span>Fiches</span>
+      </a>
+
+      <a routerLink="/classement" routerLinkActive="active" class="nav-item main-item">
+        <svg lucideTrophy class="icon"></svg>
+        <span>Classement</span>
+      </a>
+
+    </div>
+
+    <div class="user-nav">
+
+      <a routerLink="/amis" routerLinkActive="active" class="nav-item user-item">
+        <svg lucideUsers class="icon"></svg>
+        <span class="nav-label">Amis</span>
+      </a>
+
+      <a routerLink="/profil" routerLinkActive="active" class="nav-item user-item">
+        <svg lucideUserRound class="icon"></svg>
+        <span class="nav-label">Profil</span>
+      </a>
+
+    </div>
+
+  </div>
+
+</nav>

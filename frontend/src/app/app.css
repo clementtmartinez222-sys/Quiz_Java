@@ -1,58 +1,20 @@
-.site-header {
-  position: relative;
-  padding: 1rem;
-  background-color: #f0f4f8;
-  border-bottom: 1px solid #d8e0e8;
-}
-
-.site-header::after {
-  position: absolute;
-  top: 0;
-  left: 100%;
-  width: calc(100vw - 100%);
-  height: 100%;
-  background-color: inherit;
-  content: "";
-  pointer-events: none;
-}
-
-.site-nav {
+:host {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem 1.25rem;
-  max-width: 960px;
-  margin: 0 auto;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-.site-nav a {
-  color: #1f2937;
-  font-weight: 600;
-  text-decoration: none;
+app-navbar {
+  display: block;
 }
 
-.site-nav a:hover,
-.site-nav a.active {
-  color: #0056b3;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-.site-nav a:focus-visible {
-  outline: 3px solid #005fcc;
-  outline-offset: 3px;
-}
-
-.site-main {
+.main-content {
+  flex: 1;
   padding: 0 1.25rem 2rem;
 }
 
 @media (max-width: 480px) {
-  .site-nav {
-    gap: 0.75rem 1rem;
-  }
-
-  .site-main {
+  .main-content {
     padding-right: 0.75rem;
     padding-left: 0.75rem;
   }
