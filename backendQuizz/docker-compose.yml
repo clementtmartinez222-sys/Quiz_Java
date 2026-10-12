@@ -12,3 +12,9 @@ services:
       POSTGRES_DB: ${DATABASE_NAME}
     ports:
       - "5432:5432"
+    volumes:
+      - ./initdb/1_TABLES.sql:/docker-entrypoint-initdb.d/1_TABLE.sql
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:
