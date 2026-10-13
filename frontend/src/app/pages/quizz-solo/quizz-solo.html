@@ -1,0 +1,153 @@
+<div class="quizz-container">
+
+  @if (step === 'theme') {
+    <div class="theme-selection">
+      <h2>Choisissez un thème pour le Quiz Solo</h2>
+      @if (themeLoading) {
+        <p class="quiz-status" role="status" aria-live="polite">Chargement des thèmes…</p>
+      } @else if (themeLoadError) {
+        <div class="quiz-status quiz-error" role="alert">
+          <p>Impossible de charger les thèmes.</p>
+          <button type="button" class="btn-quiz-back" (click)="loadThemes()">Réessayer</button>
+        </div>
+      } @else if (themeGroups.length === 0) {
+        <p class="quiz-status">Aucun thème n’est disponible pour le moment.</p>
+      } @else {
+        <div class="theme-groups">
+          @for (group of themeGroups; track group.category) {
+            <section class="theme-group" [attr.aria-labelledby]="'theme-group-' + $index">
+              <h3 [id]="'theme-group-' + $index">{{ group.category }}</h3>
+            <div class="themes-grid">
+              @for (theme of group.themes; track theme.id) {
+                <button
+                  type="button"
+                  class="btn-theme"
+                  [style.--theme-hue]="theme.hue"
+                  (click)="selectTheme(theme.id)"
+                >
+                  {{ theme.name }}
+                </button>
+              }
+            </div>
+            </section>
+          }
+        </div>
+      }
+      <a routerLink="/home" class="button-link btn-back">Retour à l'accueil</a>
+    </div>
+  }
+
+  @if (step === 'empty') {
+    <div class="quiz-results">
+      <h2>Aucune question disponible</h2>
+      <p>Ce thème ne contient pas encore de questions.</p>
+      <button type="button" class="btn-quiz-back" (click)="showThemeSelection()">
+        Choisir un autre thème
+      </button>
+    </div>
+  }
+
+  @if (step === 'loading') {
+    <div class="quiz-status" role="status" aria-live="polite">
+      Chargement des questions…
+    </div>
+  }
+
+  @if (step === 'error') {
+    <div class="quiz-status quiz-error" role="alert">
+      <h2>Chargement impossible</h2>
+      <p>{{ loadErrorMessage }}</p>
+      <button type="button" class="btn-quiz-back" (click)="showThemeSelection()">
+        Choisir un autre thème
+      </button>
+    </div>
+  }
+
+  @if (step === 'playing' && questions.length > 0) {
+    <div class="quiz-play">
+      <div class="quiz-header">
+        <span aria-live="polite">Question {{ currentQuestionIndex + 1 }} / {{ questions.length }}</span>
+        <span class="timer" [class.warning]="timeLeft <= 2" role="timer" aria-live="off">
+          {{ timeLeft }} secondes restantes
+        </span>
+      </div>
+
+      <div class="timer-bar-container" role="progressbar" aria-label="Temps restant pour répondre"
+        [attr.aria-valuenow]="timeLeft" [attr.aria-valuemin]="0" [attr.aria-valuemax]="QUESTION_TIME">
+        <div class="timer-bar" [style.width.%]="timerProgressPercent"
+          [class.warning]="timeLeft <= 2"></div>
+      </div>
+
+      <p class="progress-label">Questions terminées : {{ completedQuestionCount }} / {{ questions.length }}</p>
+      <div class="progress-bar-container" role="progressbar" aria-label="Progression du quiz"
+        [attr.aria-valuenow]="completedQuestionCount" [attr.aria-valuemin]="0"
+        [attr.aria-valuemax]="questions.length">
+        <div class="progress-bar" [style.width.%]="progressPercent"></div>
+      </div>
+
+      <h3 id="current-question" class="question-text" aria-live="polite">
+        {{ currentQuestion?.questionText }}
+      </h3>
+
+      <div class="options-grid" role="group" aria-labelledby="current-question">
+        @for (option of currentQuestion?.options ?? []; track option.id) {
+          <button type="button" class="btn-option"
+            [class.correct]="isAnsweredOrTimeout && option.id === currentQuestion?.correctOptionId"
+            [class.incorrect]="isAnsweredOrTimeout && option.id === selectedOptionId && option.id !== currentQuestion?.correctOptionId"
+            [attr.aria-pressed]="selectedOptionId === option.id"
+            [disabled]="isAnsweredOrTimeout" (click)="answerQuestion(option.id)">
+            {{ option.text }}
+          </button>
+        }
+      </div>
+
+      @if (isAnsweredOrTimeout && currentQuestion) {
+        <p class="answer-feedback" role="status" aria-live="polite"
+          [class.correct-feedback]="selectedOptionId === currentQuestion.correctOptionId">
+          @if (selectedOptionId === null) {
+            Temps écoulé !
+          } @else if (selectedOptionId === currentQuestion.correctOptionId) {
+            Bonne réponse !
+          } @else {
+            Mauvaise réponse.
+          }
+        </p>
+      }
+
+      <div class="quiz-abandon">
+        <button type="button" class="btn-quiz-back" (click)="showThemeSelection()">
+          Abandonner et choisir un autre thème
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (step === 'result') {
+    <div class="quiz-results">
+      <h2>Quiz Terminé ! 🎉</h2>
+
+      <div class="stats-card">
+        <p><strong>Score :</strong> {{ score }} / {{ questions.length }}</p>
+        <p><strong>Meilleure série de bonnes réponses :</strong> {{ maxStreak }} 🔥</p>
+        <p><strong>Temps de réponse moyen :</strong> {{ averageResponseTimeSeconds.toFixed(2) }} secondes</p>
+      </div>
+      @if (resultSubmissionStatus === 'saving') {
+        <p role="status" aria-live="polite">Enregistrement du résultat…</p>
+      } @else if (resultSubmissionStatus === 'saved') {
+        <p role="status" aria-live="polite">Résultat enregistré.</p>
+      } @else if (resultSubmissionStatus === 'failed') {
+        <p class="quiz-error" role="alert">Le quiz est terminé, mais le résultat n'a pas pu être enregistré.</p>
+      }
+
+      <div class="results-actions">
+        <button type="button" class="btn-retry" (click)="showThemeSelection()">
+          Rejouer un Quiz
+        </button>
+        <a routerLink="/home" class="button-link btn-back">
+          Retour à l'accueil
+        </a>
+      </div>
+    </div>
+  }
+
+</div>

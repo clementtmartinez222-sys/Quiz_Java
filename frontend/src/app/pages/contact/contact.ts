@@ -1,47 +1,114 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { AbstractControl, ReactiveFormsModule, FormGroup, FormControl, ValidationErrors, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
+import { TimeoutError, finalize, take, timeout } from 'rxjs';
+import { API_REQUEST_TIMEOUT_MS } from '../../services/api-config';
+import { ContactService, ContactMessage } from '../../services/contact';
+import { requiredTrimmed } from '../../shared/form-validators';
+
+export const CONTACT_FIELD_LIMITS = {
+  // Frontend guardrails; confirm these limits with the API contract during integration.
+  name: 100,
+  email: 254,
+  message: 5000,
+} as const;
+
+function emailTrimmed(control: AbstractControl): ValidationErrors | null {
+  const value = typeof control.value === 'string' ? control.value.trim() : control.value;
+  return Validators.email(new FormControl(value));
+}
+
+function minTrimmedLength(minLength: number) {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const actualLength = typeof control.value === 'string' ? control.value.trim().length : 0;
+    return actualLength >= minLength
+      ? null
+      : { minlength: { requiredLength: minLength, actualLength } };
+  };
+}
 
 @Component({
   selector: 'app-contact',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './contact.html',
-  styleUrl: './contact.css'
 })
 export class Contact {
-  private http = inject(HttpClient);
+  private contactService = inject(ContactService);
+  private changeDetector = inject(ChangeDetectorRef);
+  private readonly requestTimeoutMs = inject(API_REQUEST_TIMEOUT_MS);
 
   contactForm = new FormGroup({
-    name: new FormControl('', [Validators.required]),
-    email: new FormControl('', [Validators.required, Validators.email]),
-    message: new FormControl('', [Validators.required, Validators.minLength(10)])
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: [requiredTrimmed, Validators.maxLength(CONTACT_FIELD_LIMITS.name)],
+    }),
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [
+        requiredTrimmed,
+        emailTrimmed,
+        Validators.maxLength(CONTACT_FIELD_LIMITS.email),
+      ],
+    }),
+    message: new FormControl('', {
+      nonNullable: true,
+      validators: [
+        requiredTrimmed,
+        minTrimmedLength(10),
+        Validators.maxLength(CONTACT_FIELD_LIMITS.message),
+      ],
+    }),
   });
 
-  successMessage: string = '';
-  errorMessage: string = '';
+  errorMessage = '';
+  isSubmitting = false;
+  submissionComplete = false;
+  readonly fieldLimits = CONTACT_FIELD_LIMITS;
 
-  onSubmit() {
-    if (this.contactForm.valid) {
-      const contactData = this.contactForm.value;
-
-      this.http.post('http://localhost:8080/api/contact', contactData, { responseType: 'text' }).subscribe({
-        next: (response) => {
-          console.log('Message envoyé avec succès !', response);
-          this.successMessage = 'Votre message a bien été envoyé ! Nous vous répondrons rapidement.';
-          this.errorMessage = '';
-          this.contactForm.reset();
-        },
-        error: (err) => {
-          console.error("Erreur lors de l'envoi", err);
-          this.errorMessage = "Impossible d'envoyer le message pour le moment. Réessayez plus tard.";
-          this.successMessage = '';
-        }
-      });
-
-    } else {
+  onSubmit(): void {
+    if (this.contactForm.invalid) {
       this.contactForm.markAllAsTouched();
+      return;
     }
+
+    if (this.isSubmitting) return;
+
+    this.submissionComplete = false;
+    const formValue = this.contactForm.getRawValue();
+    const contactData: ContactMessage = {
+      name: formValue.name.trim(),
+      email: formValue.email.trim(),
+      message: formValue.message.trim(),
+    };
+    this.errorMessage = '';
+    this.isSubmitting = true;
+
+    this.contactService.sendMessage(contactData).pipe(
+      timeout({ first: this.requestTimeoutMs }),
+      take(1),
+      finalize(() => {
+        this.isSubmitting = false;
+        this.changeDetector.markForCheck();
+      }),
+    ).subscribe({
+      next: () => {
+        this.submissionComplete = true;
+        this.contactForm.reset();
+        this.changeDetector.markForCheck();
+      },
+      error: (error: unknown) => {
+        if (error instanceof TimeoutError) {
+          this.errorMessage = "Nous n'avons pas reçu de confirmation. Votre message a peut-être été envoyé ; vérifiez avant de le renvoyer.";
+        } else if (error instanceof HttpErrorResponse && error.status === 0) {
+          this.errorMessage = "Impossible d'envoyer votre message. Vérifiez votre connexion puis réessayez.";
+        } else {
+          this.errorMessage = "Votre message n'a pas pu être envoyé. Veuillez réessayer.";
+        }
+        this.changeDetector.markForCheck();
+      },
+    });
   }
 }

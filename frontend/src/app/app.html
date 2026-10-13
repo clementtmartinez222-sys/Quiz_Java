@@ -1,12 +1,15 @@
-<header style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
-  <nav>
-    <a routerLink="/home" style="margin-right: 15px;">Accueil</a>
-    <a routerLink="/contact" style="margin-right: 15px;">Contact</a>
-    <a routerLink="/contact" style="margin-right: 15px;">Login</a>
+<header class="site-header">
+  <nav class="site-nav" aria-label="Navigation principale">
+    <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      Accueil
+    </a>
+    <a routerLink="/quizz-solo" routerLinkActive="active">Quiz solo</a>
+    <a routerLink="/contact" routerLinkActive="active">Contact</a>
+    <a routerLink="/login" routerLinkActive="active">Connexion</a>
+    <a routerLink="/register" routerLinkActive="active">Inscription</a>
   </nav>
 </header>
 
-<main style="padding: 0 20px;">
-  <!-- C'est ici que tes pages (Home et Contact) vont s'afficher dynamiquement -->
+<main class="site-main">
   <router-outlet></router-outlet>
 </main>

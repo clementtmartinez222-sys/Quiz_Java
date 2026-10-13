@@ -9,6 +9,7 @@
 }
 
 .home-container h1 {
+  margin-top: 0;
   margin-bottom: 1rem;
   font-size: 1.5rem;
   color: #333;
@@ -21,7 +22,7 @@
 }
 
 .home-container button,
-.home-container a.btn-link {
+.home-container a {
   display: block;
   width: 100%;
   padding: 0.75rem;
@@ -39,7 +40,7 @@
 }
 
 .home-container button:hover,
-.home-container a.btn-link:hover {
+.home-container a:hover {
   background-color: #0056b3;
 }
 
@@ -49,4 +50,15 @@
 
 .home-container .btn-secondary:hover {
   background-color: #5a6268;
+}
+
+.home-actions {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.home-container button:focus-visible,
+.home-container a:focus-visible {
+  outline: 3px solid #005fcc;
+  outline-offset: 2px;
 }

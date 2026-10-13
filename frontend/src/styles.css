@@ -1,3 +1,222 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+html {
+  scrollbar-gutter: auto;
+  overflow-x: clip;
+}
+
+.form-page-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.contact-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 680px;
+  margin: 1.25rem auto;
+  padding: 1.5rem;
+}
+
+.form-page-container fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.contact-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1rem;
+}
+
+.contact-fields .form-group:last-child {
+  grid-column: 1 / -1;
+}
+
+.form-page-container .form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.2rem;
+}
+
+.contact-container .form-group {
+  margin-bottom: 0.85rem;
+}
+
+.form-page-container .form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.form-page-container .form-group input,
+.form-page-container .form-group textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font: inherit;
+}
+
+.form-page-container .form-group textarea {
+  resize: vertical;
+}
+
+.form-page-container input:focus-visible,
+.form-page-container textarea:focus-visible,
+.form-page-container button:focus-visible,
+.form-page-container .button-link:focus-visible {
+  outline: 3px solid #005fcc;
+  outline-offset: 2px;
+}
+
+.form-page-container button,
+.button-link {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 3rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border: 0;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 1rem;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button-link.btn-back {
+  background-color: #6c757d;
+}
+
+.button-link.btn-back:hover {
+  background-color: #5a6268;
+}
+
+.button-link:focus-visible {
+  outline: 3px solid #005fcc;
+  outline-offset: 2px;
+}
+
+.form-page-container button:disabled {
+  background-color: #a0c4ff;
+  cursor: not-allowed;
+}
+
+.form-page-container .btn-secondary {
+  background-color: #6c757d;
+}
+
+.form-page-container .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.form-page-container .auth-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d8e0e8;
+  border-radius: 6px;
+  background-color: #f0f4f8;
+  text-align: center;
+}
+
+.form-page-container .auth-switch p {
+  margin: 0;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.form-page-container .auth-switch-link {
+  color: #0056b3;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.form-page-container .auth-switch-link:hover {
+  color: #003f85;
+}
+
+.form-page-container .auth-switch-link:focus-visible {
+  outline: 3px solid #005fcc;
+  outline-offset: 3px;
+}
+
+.form-page-container .auth-success-link {
+  background-color: #007bff;
+}
+
+.form-page-container .auth-success-link:hover {
+  background-color: #0056b3;
+}
+
+.form-page-container .error {
+  margin-top: 0.25rem;
+  color: #dc3545;
+  font-size: 0.85rem;
+}
+
+.form-page-container .error-message,
+.form-page-container .success-message {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.form-page-container .error-message {
+  color: #dc3545;
+}
+
+.form-page-container .success-message {
+  color: #28a745;
+}
+
+.form-page-container .feedback-slot {
+  box-sizing: border-box;
+  height: 4.5rem;
+  flex: none;
+  padding-top: 0.25rem;
+}
+
+.contact-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.contact-actions button,
+.contact-actions .button-link {
+  margin-top: 0;
+}
+
+@media (max-width: 480px) {
+  .form-page-container .feedback-slot {
+    height: 5.5rem;
+  }
+
+  .contact-container {
+    padding: 1.25rem;
+  }
+
+  .contact-fields,
+  .contact-actions {
+    grid-template-columns: 1fr;
+  }
+}
