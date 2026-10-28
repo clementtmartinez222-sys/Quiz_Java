@@ -22,6 +22,13 @@ public class QuizController {
         return quizService.getAllQuizzes();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<QuizResponse> getQuizById(@PathVariable Long id) {
+        return quizService.getQuizById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     public ResponseEntity<Quiz> createQuiz(@RequestBody Quiz quiz) {
         Quiz savedQuiz = quizService.createQuiz(quiz);
