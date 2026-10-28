@@ -23,15 +23,6 @@ public class Question {
     @Column(name = "quiz_id", nullable = false)
     private Long quizId;
 
-    protected Question() {
-    }
-
-    public Question(String statement, String imgPath, Long quizId) {
-        this.statement = statement;
-        this.imgPath = imgPath;
-        this.quizId = quizId;
-    }
-
     public Long getId() {
         return id;
     }
