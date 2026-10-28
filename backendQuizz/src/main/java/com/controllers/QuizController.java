@@ -1,10 +1,10 @@
 package com.controllers;
 
 import com.dto.QuizResponse;
+import com.models.Quiz;
 import com.services.QuizService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,5 +20,11 @@ public class QuizController {
     @GetMapping
     public List<QuizResponse> getAllQuizzes() {
         return quizService.getAllQuizzes();
+    }
+
+    @PostMapping
+    public ResponseEntity<Quiz> createQuiz(@RequestBody Quiz quiz) {
+        Quiz savedQuiz = quizService.createQuiz(quiz);
+        return ResponseEntity.status(201).body(savedQuiz);
     }
 }

@@ -1,6 +1,7 @@
 package com.services;
 
 import com.dto.QuizResponse;
+import com.models.Quiz;
 import com.repositories.QuizRepository;
 import org.springframework.stereotype.Service;
 
@@ -22,5 +23,9 @@ public class QuizService {
                         quiz.getCategory()
                 ))
                 .toList();
+    }
+
+    public Quiz createQuiz(Quiz quiz) {
+        return quizRepository.save(quiz);
     }
 }
