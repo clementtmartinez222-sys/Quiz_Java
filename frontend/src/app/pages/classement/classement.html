@@ -1,1 +1,148 @@
-<p>classement works!</p>
+<div class="classement-page">
+
+
+  <header class="page-header">
+    <div class="header-text">
+      <span class="site-label">NAUTE QUIZCULTURE</span>
+      <h1>Classement</h1>
+      <p>Affronte tes amis et grimpe au sommet du classement.</p>
+    </div>
+
+    <div class="elo-badge">
+      <span class="elo-number">ELO</span>
+      <span>Classement général</span>
+    </div>
+  </header>
+
+
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">♟</div>
+      <div>
+        <p>Joueurs classés</p>
+        <h2>{{ joueurs.length }}</h2>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🏆</div>
+      <div>
+        <p>Meilleur ELO</p>
+        <h2>{{ meilleurElo }}</h2>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">⚔</div>
+      <div>
+        <p>Parties jouées</p>
+        <h2>{{ totalMatchs }}</h2>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tableau du classement -->
+  <section class="ranking-card">
+
+    <div class="ranking-header">
+      <div>
+        <h2>Classement général</h2>
+        <p>{{ joueursFiltres.length }} joueurs affichés</p>
+      </div>
+
+      <div class="ranking-controls">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input
+            type="text"
+            placeholder="Rechercher un joueur..."
+            [(ngModel)]="recherche"
+          />
+        </div>
+
+        <select [(ngModel)]="tri" aria-label="Trier le classement">
+          <option value="elo">Trier par ELO</option>
+          <option value="victoires">Trier par victoires</option>
+          <option value="matchs">Trier par parties</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+        <tr>
+          <th class="rank-column">Rang</th>
+          <th>Joueur</th>
+          <th class="number-column">ELO</th>
+          <th class="number-column">Victoires</th>
+          <th class="number-column">Parties</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr *ngFor="let joueur of joueursFiltres; let i = index">
+          <td class="rank-column">
+              <span
+                class="rank"
+                [class.gold]="i === 0"
+                [class.silver]="i === 1"
+                [class.bronze]="i === 2"
+              >
+                <ng-container *ngIf="i < 3; else numeroRang">
+                  {{ i === 0 ? '♛' : '♙' }}
+                </ng-container>
+
+                <ng-template #numeroRang>
+                  {{ i + 1 }}
+                </ng-template>
+              </span>
+          </td>
+
+          <td>
+            <div class="player-info">
+              <div class="player-avatar">
+                {{ joueur.pseudo.substring(0, 2).toUpperCase() }}
+              </div>
+
+              <div class="player-details">
+                <span class="player-name">{{ joueur.pseudo }}</span>
+                <span class="player-status">
+                    <span class="status-dot"></span>
+                    Joueur classé
+                  </span>
+              </div>
+            </div>
+          </td>
+
+          <td class="number-column">
+            <span class="elo-value">{{ joueur.elo }}</span>
+          </td>
+
+          <td class="number-column">
+            <span class="stat-value">{{ joueur.victoires }}</span>
+          </td>
+
+          <td class="number-column">
+            <span class="stat-value">{{ joueur.matchs }}</span>
+          </td>
+        </tr>
+
+        <tr *ngIf="joueursFiltres.length === 0">
+          <td colspan="5" class="empty-state">
+            <span class="empty-icon">⌕</span>
+            <h3>Aucun joueur trouvé</h3>
+            <p>Essaie avec un autre pseudo.</p>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="ranking-footer">
+      <span>Les joueurs sont classés selon leur ELO.</span>
+      <span>{{ joueursFiltres.length }} résultat(s)</span>
+    </footer>
+
+  </section>
+</div>

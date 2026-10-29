@@ -1,1 +1,64 @@
-<p>amis works!</p>
+<!-- La navbar est supposée être affichée par app.component.html. -->
+<main class="friends-page">
+  <header class="friends-heading">
+    <div>
+      <p class="friends-eyebrow">COMMUNAUTÉ QUIZCULTURE</p>
+      <h1>Mes amis</h1>
+      <p class="friends-subtitle">Retrouve tes amis et défie-les sur tes connaissances.</p>
+    </div>
+    <div class="friends-summary" aria-label="Nombre d'amis">
+      <span class="friends-summary-number">{{ friendsCount }}</span>
+      <span>amis</span>
+    </div>
+  </header>
+
+  <section class="friends-search-panel" aria-label="Rechercher des joueurs">
+    <label class="friends-search-label" for="friends-search">Rechercher un joueur</label>
+    <div class="friends-search-box">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="m16 16 4 4"></path>
+      </svg>
+      <input id="friends-search" type="search" [(ngModel)]="searchTerm"
+             placeholder="Recherche par pseudo..." autocomplete="off">
+      <button *ngIf="searchTerm" class="friends-clear" type="button"
+              aria-label="Effacer la recherche" (click)="searchTerm = ''">×</button>
+    </div>
+    <p class="friends-search-hint">Cherche un pseudo pour retrouver un joueur ou gérer tes amis.</p>
+  </section>
+
+  <section class="friends-results" aria-label="Liste des joueurs">
+    <div class="friends-list-heading">
+      <h2>{{ searchTerm.trim() ? 'Résultats de recherche' : 'Joueurs' }}</h2>
+      <span>{{ filteredUsers.length }} joueur{{ filteredUsers.length > 1 ? 's' : '' }}</span>
+    </div>
+
+    <div class="friends-list" *ngIf="filteredUsers.length; else noUsers">
+      <article class="friends-user-card" *ngFor="let user of filteredUsers; trackBy: trackByUserId">
+        <div class="friends-avatar" aria-hidden="true">
+          {{ user.username.substring(0, 2).toUpperCase() }}
+        </div>
+        <div class="friends-user-info">
+          <div class="friends-user-name">{{ user.username }}</div>
+          <div class="friends-user-status">
+            <span class="friends-status-dot" [class.is-online]="user.online"></span>
+            <span>{{ user.online ? 'En ligne' : 'Hors ligne' }}</span>
+          </div>
+        </div>
+        <button class="friends-action"
+                [class.friends-action-add]="!user.isFriend"
+                [class.friends-action-remove]="user.isFriend"
+                type="button" (click)="toggleFriend(user)"
+                [attr.aria-label]="(user.isFriend ? 'Supprimer ' : 'Ajouter ') + user.username">
+          <span aria-hidden="true">{{ user.isFriend ? '−' : '+' }}</span>
+          {{ user.isFriend ? 'Supprimer' : 'Ajouter' }}
+        </button>
+      </article>
+    </div>
+
+    <ng-template #noUsers>
+      <p class="friends-empty">Aucun joueur trouvé. Essaie un autre pseudo.</p>
+    </ng-template>
+  </section>
+</main>
+
