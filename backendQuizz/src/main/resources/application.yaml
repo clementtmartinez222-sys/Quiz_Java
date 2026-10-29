@@ -2,7 +2,7 @@ spring:
   application:
     name: backendQuizz
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/quizz_db}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/quizz_db}
     username: ${DATABASE_USER:quiz_user}
     password: ${DATABASE_PASSWORD:quiz_local_dev}
     driver-class-name: org.postgresql.Driver
