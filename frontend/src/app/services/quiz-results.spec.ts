@@ -20,7 +20,10 @@ describe('QuizResultsService', () => {
     return TestBed.inject(QuizResultsService);
   }
 
-  afterEach(() => httpTestingController?.verify());
+  afterEach(() => {
+    httpTestingController?.verify();
+    localStorage.removeItem('token');
+  });
 
   const result = {
     themeId: 'java',
@@ -41,6 +44,7 @@ describe('QuizResultsService', () => {
   });
 
   it('posts results when backend submission is enabled', () => {
+    localStorage.setItem('token', 'session-token');
     const service = configure(true);
     let completed = false;
 
@@ -55,6 +59,7 @@ describe('QuizResultsService', () => {
   });
 
   it('passes result submission errors to the caller', () => {
+    localStorage.setItem('token', 'session-token');
     const service = configure(true);
     let receivedError: unknown;
 
@@ -66,5 +71,16 @@ describe('QuizResultsService', () => {
       .flush(null, { status: 500, statusText: 'Server Error' });
 
     expect(receivedError).toMatchObject({ status: 500 });
+  });
+
+  it('does not send results for a guest even when result saving is enabled', () => {
+    const service = configure(true);
+    let completed = false;
+
+    service.submitResult(result).subscribe({ complete: () => completed = true });
+
+    expect(service.isSubmissionEnabled).toBe(false);
+    expect(completed).toBe(true);
+    httpTestingController?.expectNone('http://localhost:8080/api/quiz/results');
   });
 });

@@ -83,6 +83,23 @@ describe('QuizzSolo', () => {
     expect(homeLink.classList).toContain('btn-back');
   });
 
+  it('presents replay and home actions as balanced result controls', () => {
+    component.step = 'result';
+    component.questions = JAVA_QUESTIONS;
+    fixture.detectChanges();
+
+    const actions = fixture.nativeElement.querySelector('.results-actions');
+    const replayButton = actions.querySelector('.btn-retry');
+    const homeLink = actions.querySelector('a[routerLink="/home"]');
+
+    expect(actions.getAttribute('role')).toBe('group');
+    expect(actions.getAttribute('aria-label')).toBe('Actions de fin de quiz');
+    expect(replayButton.textContent.trim()).toBe('Rejouer un Quiz');
+    expect(homeLink.textContent.trim()).toBe("Retour à l'accueil");
+    expect(replayButton.classList).toContain('btn-retry');
+    expect(homeLink.classList).toContain('button-link');
+  });
+
   it('groups themes by category and assigns each a distinct rainbow hue', () => {
     fixture.detectChanges();
 

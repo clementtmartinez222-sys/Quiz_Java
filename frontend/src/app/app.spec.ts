@@ -30,5 +30,7 @@ describe('App', () => {
     expect(compiled.querySelector('a[href="/classement"]')).toBeTruthy();
     expect(compiled.querySelector('a[href="/amis"]')).toBeTruthy();
     expect(compiled.querySelector('a[href="/profil"]')).toBeTruthy();
+    expect(compiled.querySelector('nav a[href="/contact"]')).toBeNull();
+    expect(compiled.querySelector('app-footer footer a[href="/contact"]')).toBeTruthy();
   });
 });

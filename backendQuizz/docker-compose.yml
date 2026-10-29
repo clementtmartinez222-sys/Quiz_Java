@@ -1,14 +1,21 @@
-version: '3.1'
 services:
   database:
     container_name: quizz_database
-    image: postgres
+    image: postgres:17-alpine
     restart: always
-    env_file:
-      - .env
     environment:
-      POSTGRES_USER : ${DATABASE_USER}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER:-quiz_user}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-quiz_local_dev}
+      POSTGRES_DB: ${DATABASE_NAME:-quizz_db}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - quizz_database_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  quizz_database_data:

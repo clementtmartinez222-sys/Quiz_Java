@@ -9,6 +9,7 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     localStorage.removeItem('token');
+    localStorage.removeItem('username');
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],
     });
@@ -19,6 +20,7 @@ describe('AuthService', () => {
   afterEach(() => {
     httpTesting.verify();
     localStorage.removeItem('token');
+    localStorage.removeItem('username');
   });
 
   it('posts typed credentials and stores the returned token', () => {
@@ -31,6 +33,7 @@ describe('AuthService', () => {
     request.flush({ token: ' session-token ' });
 
     expect(localStorage.getItem('token')).toBe('session-token');
+    expect(service.getCurrentUsername()).toBe('alice');
     expect(service.isLoggedIn()).toBe(true);
   });
 
@@ -59,9 +62,14 @@ describe('AuthService', () => {
 
   it('removes the token when logging out', () => {
     localStorage.setItem('token', 'session-token');
+    localStorage.setItem('username', 'alice');
 
     service.logout();
+    const request = httpTesting.expectOne('/api/logout');
+    expect(request.request.method).toBe('POST');
+    request.flush(null);
 
     expect(localStorage.getItem('token')).toBeNull();
+    expect(service.getCurrentUsername()).toBeNull();
   });
 });

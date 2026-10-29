@@ -12,15 +12,13 @@ describe('Contact', () => {
   let sendMessage: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    sendMessage = vi.fn<(message: ContactMessage) => Observable<string>>()
+    sendMessage = vi
+      .fn<(message: ContactMessage) => Observable<string>>()
       .mockReturnValue(of('sent'));
 
     await TestBed.configureTestingModule({
       imports: [Contact],
-      providers: [
-        provideRouter([]),
-        { provide: ContactService, useValue: { sendMessage } },
-      ],
+      providers: [provideRouter([]), { provide: ContactService, useValue: { sendMessage } }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Contact);
@@ -32,6 +30,18 @@ describe('Contact', () => {
     expect(component).toBeTruthy();
   });
 
+  it('keeps the compact two-column fields and grouped form actions', () => {
+    const fields = fixture.nativeElement.querySelector('.contact-fields');
+    const actions = fixture.nativeElement.querySelector('.contact-actions');
+
+    expect(fields.querySelectorAll('.form-group')).toHaveLength(3);
+    expect(fixture.nativeElement.querySelector('#message').getAttribute('rows')).toBe('2');
+    expect(actions.querySelector('button[type="submit"]')?.textContent).toContain('Envoyer');
+    expect(actions.querySelector('a[routerLink="/home"]')?.textContent).toContain(
+      "Retour à l'accueil",
+    );
+  });
+
   it('marks invalid fields as touched and displays accessible errors', () => {
     component.onSubmit();
     fixture.detectChanges();
@@ -39,10 +49,18 @@ describe('Contact', () => {
     expect(component.contactForm.controls.name.touched).toBe(true);
     expect(component.contactForm.controls.email.touched).toBe(true);
     expect(component.contactForm.controls.message.touched).toBe(true);
-    expect(fixture.nativeElement.querySelector('#name').getAttribute('aria-describedby'))
-      .toBe('name-error');
-    expect(fixture.nativeElement.querySelector('#message-error').textContent)
-      .toContain('Le message est requis.');
+    expect(fixture.nativeElement.querySelector('#name').getAttribute('aria-describedby')).toBe(
+      'name-error',
+    );
+    expect(fixture.nativeElement.querySelector('#message-error').textContent).toContain(
+      'Le message est requis.',
+    );
+    expect(fixture.nativeElement.querySelector('#name-error').textContent).toContain(
+      'Le nom est requis.',
+    );
+    expect(fixture.nativeElement.querySelector('#email-error').textContent).toContain(
+      "L'adresse email est requise.",
+    );
     expect(sendMessage).not.toHaveBeenCalled();
   });
 
@@ -87,11 +105,13 @@ describe('Contact', () => {
       message: 'This is a long enough message.',
     });
     expect(component.submissionComplete).toBe(true);
-    expect(fixture.nativeElement.querySelector('[role="status"]').textContent)
-      .toContain('Votre message a bien été envoyé');
+    expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain(
+      'Votre message a bien été envoyé',
+    );
     expect(fixture.nativeElement.querySelector('form')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('button[type="submit"]').textContent)
-      .toContain('Envoyer');
+    expect(fixture.nativeElement.querySelector('button[type="submit"]').textContent).toContain(
+      'Envoyer',
+    );
   });
 
   it('keeps the form and submit button available after success', () => {
@@ -105,8 +125,9 @@ describe('Contact', () => {
 
     expect(component.submissionComplete).toBe(true);
     expect(fixture.nativeElement.querySelector('form')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('button[type="submit"]').textContent)
-      .toContain('Envoyer');
+    expect(fixture.nativeElement.querySelector('button[type="submit"]').textContent).toContain(
+      'Envoyer',
+    );
   });
 
   it('preserves the success confirmation if an invalid follow-up submission is attempted', () => {
@@ -122,15 +143,14 @@ describe('Contact', () => {
     fixture.detectChanges();
 
     expect(component.submissionComplete).toBe(true);
-    expect(fixture.nativeElement.querySelector('.success-message').textContent)
-      .toContain('Votre message a bien été envoyé');
+    expect(fixture.nativeElement.querySelector('.success-message').textContent).toContain(
+      'Votre message a bien été envoyé',
+    );
     expect(sendMessage).toHaveBeenCalledTimes(1);
   });
 
   it('shows a user-friendly error for a network failure', () => {
-    sendMessage.mockReturnValueOnce(
-      throwError(() => new HttpErrorResponse({ status: 0 })),
-    );
+    sendMessage.mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 0 })));
     component.contactForm.setValue({
       name: 'Alice',
       email: 'alice@example.com',
@@ -140,11 +160,13 @@ describe('Contact', () => {
     component.onSubmit();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent)
-      .toContain('Vérifiez votre connexion');
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
+      'Vérifiez votre connexion',
+    );
     const form = fixture.nativeElement.querySelector('form');
-    expect(Array.from(form.children).indexOf(form.querySelector('.feedback-slot')))
-      .toBeLessThan(Array.from(form.children).indexOf(form.querySelector('.contact-actions')));
+    expect(Array.from(form.children).indexOf(form.querySelector('.feedback-slot'))).toBeLessThan(
+      Array.from(form.children).indexOf(form.querySelector('.contact-actions')),
+    );
     expect(form.querySelector('.contact-actions a[routerLink="/home"]')).not.toBeNull();
     expect(component.isSubmitting).toBe(false);
   });
@@ -193,8 +215,9 @@ describe('Contact', () => {
       expect(component.isSubmitting).toBe(false);
       expect(component.errorMessage).toContain("Nous n'avons pas reçu de confirmation");
       expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(false);
-      expect(fixture.nativeElement.querySelector('button[type="submit"]').textContent)
-        .toContain('Envoyer');
+      expect(fixture.nativeElement.querySelector('button[type="submit"]').textContent).toContain(
+        'Envoyer',
+      );
     } finally {
       vi.useRealTimers();
     }

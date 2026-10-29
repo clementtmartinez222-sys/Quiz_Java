@@ -1,69 +1,68 @@
-
 .navbar {
   width: 100%;
-  background: linear-gradient(135deg, #0c1930, #172743);
   color: #ffffff;
-  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, var(--color-navy), var(--color-navy-light));
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
 }
 
-
 .navbar-top {
-  min-height: 76px;
   display: flex;
+  min-height: 76px;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 12px 20px;
   padding: 0 3%;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
-
 
 .logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  text-decoration: none;
   color: #ffffff;
   font-size: 24px;
   font-weight: 800;
+  text-decoration: none;
 }
 
 .logo-icon {
   width: 75px;
   height: 75px;
-  object-fit: contain;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .logo-text span {
   color: #9584ff;
 }
 
-
+.navbar-main,
 .user-nav {
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: center;
-  flex-wrap: nowrap;
-  gap: 12px;
+  gap: 8px;
 }
 
+.user-nav {
+  flex-wrap: wrap;
+  gap: 8px;
+}
 
 .nav-item {
   display: flex;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  color: #cbd5e1;
-  text-decoration: none;
-  font-weight: 600;
+  gap: 8px;
   border-radius: 12px;
+  color: #cbd5e1;
+  font-weight: 600;
+  text-decoration: none;
   transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .nav-item:hover {
@@ -73,7 +72,7 @@
 
 .nav-item:focus-visible,
 .logo:focus-visible {
-  outline: 2px solid #a5b4fc;
+  outline: 2px solid var(--color-focus-soft);
   outline-offset: 3px;
 }
 
@@ -84,9 +83,8 @@
   stroke-width: 2;
 }
 
-
 .user-item {
-  padding: 10px 16px;
+  padding: 8px 12px;
   background: rgba(255, 255, 255, 0.05);
   font-size: 14px;
 }
@@ -96,29 +94,15 @@
   background: rgba(124, 92, 255, 0.18);
 }
 
-
-.navbar-main {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 8px;
-  padding: 0;
-  min-height: auto;
-}
-
-
 .main-item {
-  min-width: auto;
-  padding: 13px 16px;
+  padding: 12px 14px;
   font-size: 15px;
   white-space: nowrap;
 }
 
 .main-item.active {
   color: #ffffff;
-  background: linear-gradient(135deg, #6555ed, #8055f7);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
   box-shadow: 0 4px 14px rgba(101, 85, 237, 0.25);
 }
 
@@ -126,54 +110,75 @@
   background: linear-gradient(135deg, #7566f5, #9068ff);
 }
 
+@media (max-width: 900px) {
+  .navbar-top {
+    justify-content: center;
+    padding: 8px 16px;
+  }
 
+  .navbar-main,
+  .user-nav {
+    flex-wrap: wrap;
+  }
+}
 
 @media (max-width: 600px) {
   .navbar-top {
-    min-height: 64px;
-    padding: 0 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: stretch;
+    gap: 6px;
+    padding: 8px 12px;
   }
 
   .logo {
-    font-size: 18px;
+    justify-self: center;
     gap: 6px;
-  }
-
-
-  .user-nav {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    gap: 8px;
-  }
-
-  .user-item {
-    padding: 9px;
-  }
-
-  .user-item .icon {
     font-size: 18px;
   }
 
-  .user-item .nav-label {
-    display: none;
+  .logo-icon {
+    width: 48px;
+    height: 48px;
   }
 
   .navbar-main {
-    gap: 6px;
-    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .user-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .nav-item {
+    min-width: 0;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 4px;
+    font-size: 12px;
+    text-align: center;
   }
 
   .main-item {
-    flex: 1;
-    min-width: 0;
-    padding: 12px 4px;
-    flex-direction: column;
-    gap: 5px;
-    font-size: 12px;
+    white-space: normal;
   }
 
-  .main-item .icon {
-    font-size: 19px;
+  .user-item {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-item {
+    transition: none;
   }
 }

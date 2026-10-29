@@ -13,15 +13,13 @@ describe('Login', () => {
   let login: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    login = vi.fn<(credentials: LoginCredentials) => Observable<LoginResponse>>()
+    login = vi
+      .fn<(credentials: LoginCredentials) => Observable<LoginResponse>>()
       .mockReturnValue(of({ token: 'test-token' }));
 
     await TestBed.configureTestingModule({
       imports: [Login],
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: { login } },
-      ],
+      providers: [provideRouter([]), { provide: AuthService, useValue: { login } }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Login);
@@ -41,10 +39,12 @@ describe('Login', () => {
 
     expect(component.loginForm.controls.username.touched).toBe(true);
     expect(component.loginForm.controls.password.touched).toBe(true);
-    expect(fixture.nativeElement.querySelector('#username').getAttribute('aria-describedby'))
-      .toBe('username-error');
-    expect(fixture.nativeElement.querySelector('#password-error').textContent)
-      .toContain('Le mot de passe est requis.');
+    expect(fixture.nativeElement.querySelector('#username').getAttribute('aria-describedby')).toBe(
+      'username-error',
+    );
+    expect(fixture.nativeElement.querySelector('#password-error').textContent).toContain(
+      'Le mot de passe est requis.',
+    );
     expect(login).not.toHaveBeenCalled();
   });
 
@@ -63,8 +63,13 @@ describe('Login', () => {
   });
 
   it('uses a link for navigation back to home', () => {
-    expect(fixture.nativeElement.querySelector('a[routerLink="/home"]')?.textContent)
-      .toContain("Retour à l'accueil");
+    const actions = fixture.nativeElement.querySelector('.auth-form-actions');
+    expect(actions.querySelectorAll('button, a')).toHaveLength(2);
+    expect(actions.querySelector('button[type="submit"]')?.textContent).toContain('Se connecter');
+    expect(actions.querySelector('a[routerLink="/home"]')?.textContent).toContain(
+      "Retour à l'accueil",
+    );
+    expect(fixture.nativeElement.querySelector('.auth-server-feedback')).not.toBeNull();
   });
 
   it('highlights registration as a separate secondary action', () => {
@@ -94,11 +99,20 @@ describe('Login', () => {
     component.onSubmit();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent)
-      .toContain("Nom d'utilisateur ou mot de passe incorrect.");
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
+      "Nom d'utilisateur ou mot de passe incorrect.",
+    );
     const form = fixture.nativeElement.querySelector('form');
-    expect(Array.from(form.children).indexOf(form.querySelector('.feedback-slot')))
-      .toBeLessThan(Array.from(form.children).indexOf(form.querySelector('button[type="submit"]')));
+    const children = Array.from(form.children);
+    expect(children.indexOf(form.querySelector('.auth-server-feedback'))).toBeLessThan(
+      children.indexOf(form.querySelector('.auth-form-actions')),
+    );
+    const containerChildren = Array.from(
+      fixture.nativeElement.querySelector('.auth-page-container').children,
+    );
+    expect(containerChildren.indexOf(form)).toBeLessThan(
+      containerChildren.indexOf(fixture.nativeElement.querySelector('.auth-switch')),
+    );
     expect(component.isSubmitting).toBe(false);
 
     component.onSubmit();
@@ -126,7 +140,6 @@ describe('Login', () => {
     expect(component.isSubmitting).toBe(false);
     expect(submitButton.disabled).toBe(false);
     expect(submitButton.textContent).toContain('Se connecter');
-
   });
 
   it('stops waiting and displays a backend timeout message if the request never responds', () => {
@@ -143,8 +156,9 @@ describe('Login', () => {
 
       expect(component.isSubmitting).toBe(false);
       expect(component.errorMessage).toContain('La demande n’a pas abouti');
-      expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent)
-        .toContain('La demande n’a pas abouti');
+      expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent).toContain(
+        'La demande n’a pas abouti',
+      );
       expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(false);
     } finally {
       vi.useRealTimers();
@@ -158,8 +172,9 @@ describe('Login', () => {
     component.onSubmit();
     fixture.detectChanges();
 
-    expect(component.errorMessage)
-      .toBe('Impossible de se connecter. Vérifiez votre connexion et réessayez.');
+    expect(component.errorMessage).toBe(
+      'Impossible de se connecter. Vérifiez votre connexion et réessayez.',
+    );
     expect(component.isSubmitting).toBe(false);
   });
 });

@@ -6,7 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TimeoutError, finalize, take, timeout } from 'rxjs';
 import { API_REQUEST_TIMEOUT_MS } from '../../services/api-config';
 import { AuthService, RegisterCredentials } from '../../services/auth';
-import { requiredTrimmed } from '../../shared/form-validators';
+import { maxUtf8Bytes, requiredTrimmed } from '../../shared/form-validators';
 
 @Component({
   selector: 'app-register',
@@ -23,7 +23,12 @@ export class Register {
     username: new FormControl('', { nonNullable: true, validators: [requiredTrimmed] }),
     password: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required],
+      validators: [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(72),
+        maxUtf8Bytes(72),
+      ],
     }),
   });
 

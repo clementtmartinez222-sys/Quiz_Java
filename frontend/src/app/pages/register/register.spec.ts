@@ -12,15 +12,13 @@ describe('Register', () => {
   let register: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    register = vi.fn<(credentials: RegisterCredentials) => Observable<void>>()
+    register = vi
+      .fn<(credentials: RegisterCredentials) => Observable<void>>()
       .mockReturnValue(of(undefined));
 
     await TestBed.configureTestingModule({
       imports: [Register],
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: { register } },
-      ],
+      providers: [provideRouter([]), { provide: AuthService, useValue: { register } }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Register);
@@ -38,17 +36,37 @@ describe('Register', () => {
 
     expect(component.registerForm.controls.username.touched).toBe(true);
     expect(component.registerForm.controls.password.touched).toBe(true);
-    expect(fixture.nativeElement.querySelector('#username').getAttribute('aria-describedby'))
-      .toBe('username-error');
-    expect(fixture.nativeElement.querySelector('#password-error').textContent)
-      .toContain('Le mot de passe est requis.');
+    expect(fixture.nativeElement.querySelector('#username').getAttribute('aria-describedby')).toBe(
+      'username-error',
+    );
+    expect(fixture.nativeElement.querySelector('#password-error').textContent).toContain(
+      'Le mot de passe est requis.',
+    );
     expect(register).not.toHaveBeenCalled();
+  });
+
+  it('groups the submit and home actions in the shared auth button layout', () => {
+    const actions = fixture.nativeElement.querySelector('.auth-form-actions');
+
+    expect(actions.querySelectorAll('button, a')).toHaveLength(2);
+    expect(actions.querySelector('button[type="submit"]')?.textContent).toContain("S'inscrire");
+    expect(actions.querySelector('a[routerLink="/home"]')?.textContent).toContain(
+      "Retour à l'accueil",
+    );
+    expect(fixture.nativeElement.querySelector('.auth-server-feedback')).not.toBeNull();
   });
 
   it('rejects usernames that contain only whitespace', () => {
     component.registerForm.setValue({ username: '   ', password: 'pass1234' });
 
     expect(component.registerForm.controls.username.hasError('required')).toBe(true);
+    expect(component.registerForm.invalid).toBe(true);
+  });
+
+  it('rejects passwords that exceed the backend UTF-8 byte limit', () => {
+    component.registerForm.setValue({ username: 'alice', password: '🔐'.repeat(20) });
+
+    expect(component.registerForm.controls.password.hasError('maxUtf8Bytes')).toBe(true);
     expect(component.registerForm.invalid).toBe(true);
   });
 
@@ -60,13 +78,16 @@ describe('Register', () => {
 
     expect(register).toHaveBeenCalledWith({ username: 'alice', password: 'pass1234' });
     expect(component.registrationComplete).toBe(true);
-    expect(fixture.nativeElement.querySelector('[role="status"]').textContent)
-      .toContain('Votre compte a été créé');
+    expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain(
+      'Votre compte a été créé',
+    );
     expect(fixture.nativeElement.querySelector('a[routerLink="/login"]')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('a[routerLink="/login"]').classList)
-      .toContain('auth-success-link');
-    expect(fixture.nativeElement.querySelector('a[routerLink="/home"]')?.textContent)
-      .toContain("Retour à l'accueil");
+    expect(fixture.nativeElement.querySelector('a[routerLink="/login"]').classList).toContain(
+      'auth-success-link',
+    );
+    expect(fixture.nativeElement.querySelector('a[routerLink="/home"]')?.textContent).toContain(
+      "Retour à l'accueil",
+    );
     expect(fixture.nativeElement.querySelector('form')).toBeNull();
     expect(fixture.nativeElement.querySelector('button[type="submit"]')).toBeNull();
   });
@@ -82,33 +103,37 @@ describe('Register', () => {
   });
 
   it('shows a specific message when the username is already taken', () => {
-    register.mockReturnValueOnce(
-      throwError(() => new HttpErrorResponse({ status: 409 })),
-    );
+    register.mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 409 })));
     component.registerForm.setValue({ username: 'alice', password: 'pass1234' });
 
     component.onSubmit();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent)
-      .toContain("Ce nom d'utilisateur est déjà utilisé");
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
+      "Ce nom d'utilisateur est déjà utilisé",
+    );
     const form = fixture.nativeElement.querySelector('form');
-    expect(Array.from(form.children).indexOf(form.querySelector('.feedback-slot')))
-      .toBeLessThan(Array.from(form.children).indexOf(form.querySelector('button[type="submit"]')));
+    const children = Array.from(form.children);
+    expect(children.indexOf(form.querySelector('.auth-server-feedback'))).toBeLessThan(
+      children.indexOf(form.querySelector('.auth-form-actions')),
+    );
+    const containerChildren = Array.from(
+      fixture.nativeElement.querySelector('.auth-page-container').children,
+    );
+    expect(containerChildren.indexOf(form)).toBeLessThan(
+      containerChildren.indexOf(fixture.nativeElement.querySelector('.auth-switch')),
+    );
     expect(component.isSubmitting).toBe(false);
   });
 
   it('shows a user-friendly message for a network failure', () => {
-    register.mockReturnValueOnce(
-      throwError(() => new HttpErrorResponse({ status: 0 })),
-    );
+    register.mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 0 })));
     component.registerForm.setValue({ username: 'alice', password: 'pass1234' });
 
     component.onSubmit();
     fixture.detectChanges();
 
-    expect(component.errorMessage)
-      .toContain('Impossible de créer le compte pour le moment');
+    expect(component.errorMessage).toContain('Impossible de créer le compte pour le moment');
     expect(component.registrationComplete).toBe(false);
   });
 
@@ -148,13 +173,14 @@ describe('Register', () => {
 
       expect(component.isSubmitting).toBe(false);
       expect(component.registrationComplete).toBe(false);
-      expect(component.errorMessage)
-        .toContain("Nous n'avons pas reçu de confirmation");
-      expect(fixture.nativeElement.querySelector('[role="alert"]').textContent)
-        .toContain('vérifiez avant de réessayer');
+      expect(component.errorMessage).toContain("Nous n'avons pas reçu de confirmation");
+      expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
+        'vérifiez avant de réessayer',
+      );
       expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(false);
-      expect(fixture.nativeElement.querySelector('button[type="submit"]').textContent)
-        .toContain("S'inscrire");
+      expect(fixture.nativeElement.querySelector('button[type="submit"]').textContent).toContain(
+        "S'inscrire",
+      );
     } finally {
       vi.useRealTimers();
     }

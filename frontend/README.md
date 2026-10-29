@@ -1,6 +1,6 @@
 # Quiz — frontend
 
-Application Angular standalone pour jouer à des quiz, créer un compte, se connecter et envoyer un message de contact. Les questions de quiz sont actuellement des données locales de démonstration ; aucun backend réel n'est nécessaire pour parcourir le quiz.
+Application Angular standalone pour jouer à des quiz, créer un compte, se connecter et envoyer un message de contact. Les thèmes, questions, résultats de quiz et données du profil sont chargés ou enregistrés via l'API backend. Un backend démarré est nécessaire pour utiliser ces parcours ; les tests Angular simulent les réponses HTTP.
 
 ## Prérequis et commandes
 
@@ -40,16 +40,16 @@ Aucun outil ni script de test end-to-end n'est configuré pour le moment.
 - `src/app/shared/` contient les helpers réutilisés, notamment les validateurs.
 - `src/environments/` configure l'URL de base de l'API et l'activation de l'envoi des résultats.
 
-Les pages sont chargées à la demande par le routeur. `QuizQuestionsService` sert les questions codées en dur et constitue le point d'entrée à remplacer ou adapter lorsque les questions seront fournies par l'API.
+Les pages sont chargées à la demande par le routeur. `QuizQuestionsService` charge les thèmes et questions depuis l'API et valide leur structure avant de les transmettre au quiz.
 
 ## API et intégration backend
 
-Les services utilisent actuellement les routes `/login`, `/register`, `/contact` et `/quiz/results` sous l'URL de base. En développement, l'URL de base est `/api` et `proxy.conf.json` relaie les requêtes vers `http://localhost:8080`, en conservant le préfixe `/api`. Cela évite d'avoir à configurer CORS pour le serveur de développement Angular. Le backend doit être lancé sur ce port et exposer les routes sous `/api` ; ce préfixe est une hypothèse frontend à confirmer.
+En développement, l'URL de base est `/api` et `proxy.conf.json` relaie les requêtes vers `http://localhost:8080`, en conservant le préfixe. Le backend expose les routes sous `/api` ; les contrats sont implémentés dans `backendQuizz`.
 
 En production, l'URL de base est également `/api` : l'hébergement devra router ce chemin vers le backend. La durée maximale d'attente HTTP frontend est configurable dans les fichiers `src/environments/` et vaut actuellement 10 secondes.
 
-Avant l'intégration, convenir avec l'équipe backend des chemins, méthodes, corps et réponses de succès, des statuts d'erreur, de l'authentification, des limites de champs et des délais de requête. Les tests HTTP du frontend vérifient les hypothèses actuelles et ne remplacent pas une validation contre le backend réel.
+Routes implémentées : `POST /login` et `POST /register`, `POST /logout`, `GET /profile`, `GET /quiz/themes`, `GET /quiz/themes/{themeId}/questions`, `POST /quiz/results` et `POST /contact`. Les routes profil, résultats et déconnexion requièrent un bearer token. Les identifiants sont créés par l'inscription, les mots de passe sont hachés côté serveur et les sessions expirent après 24 heures.
 
-Les thèmes et questions de quiz restent locaux jusqu'à ce que les routes et formats de réponse soient définis. `QuizQuestionsService.getThemes()` alimente la sélection; la page regroupe ensuite la liste reçue par `category`, trie les catégories et répartit automatiquement les teintes sur tous les thèmes. Le contrat normalisé attendu pour un thème est `{ id, name, category }`. À l'intégration, il faudra remplacer la source locale dans le service par la route convenue et adapter le parseur si le format backend diffère. Le service valide aussi les questions avant de les transmettre au quiz.
+Le contrat des thèmes est `{ id, name, category }`; celui des questions est `{ id, questionText, options: [{ id, text }], correctOptionId }`. Le résultat contient `themeId`, `correctAnswersCount`, `maxConsecutiveCorrect`, `averageResponseTimeSeconds` et `totalQuestions`. L'envoi est actif en développement et en production, mais uniquement pour un utilisateur connecté.
 
-L'envoi des résultats de quiz est désactivé dans les deux environnements. Les scores calculés dans le navigateur sont destinés à l'affichage et à la démonstration ; le backend ne doit pas les considérer comme une source fiable pour des classements ou récompenses.
+Les scores et temps envoyés sont calculés dans le navigateur et peuvent être falsifiés. Les statistiques enregistrées sont adaptées à l'historique personnel, mais ne doivent pas servir de source fiable pour un classement compétitif ou des récompenses sans validation côté serveur.

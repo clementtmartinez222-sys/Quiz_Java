@@ -36,7 +36,10 @@ describe('Home', () => {
 
   it('shows the anonymous actions when there is no stored session', () => {
     expect(fixture.nativeElement.querySelector('h1').textContent).toContain('Bienvenue');
-    expect(fixture.nativeElement.querySelector('a[routerLink="/register"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[routerLink="/quizz-solo"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[routerLink="/login"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('a[routerLink="/register"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('a[routerLink="/contact"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('button')).toBeNull();
   });
 
@@ -48,6 +51,7 @@ describe('Home', () => {
 
     expect(fixture.nativeElement.querySelector('h1').textContent).toContain('Connecté');
     expect(fixture.nativeElement.querySelector('a[routerLink="/quizz-solo"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[routerLink="/contact"]')).toBeNull();
     fixture.nativeElement.querySelector('button').click();
 
     expect(authService.logout).toHaveBeenCalledOnce();

@@ -23,6 +23,7 @@ export interface RegisterCredentials {
 export class AuthService {
   private http = inject(HttpClient);
   private readonly apiBaseUrl = inject(API_BASE_URL);
+  private readonly usernameStorageKey = 'username';
 
   login(credentials: LoginCredentials): Observable<LoginResponse> {
     return this.http.post<unknown>(`${this.apiBaseUrl}/login`, credentials).pipe(
@@ -39,7 +40,10 @@ export class AuthService {
 
         return { token: response.token.trim() };
       }),
-      tap((response) => localStorage.setItem('token', response.token)),
+      tap((response) => {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem(this.usernameStorageKey, credentials.username);
+      }),
     );
   }
 
@@ -48,11 +52,22 @@ export class AuthService {
   }
 
   logout(): void {
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.http.post<void>(`${this.apiBaseUrl}/logout`, null).subscribe({
+        error: (error: unknown) => console.error('Unable to revoke the authentication session', error),
+      });
+    }
     localStorage.removeItem('token');
+    localStorage.removeItem(this.usernameStorageKey);
   }
 
   isLoggedIn(): boolean {
     // This only checks whether a token exists; the backend remains the authority on its validity.
     return !!localStorage.getItem('token');
+  }
+
+  getCurrentUsername(): string | null {
+    return localStorage.getItem(this.usernameStorageKey);
   }
 }

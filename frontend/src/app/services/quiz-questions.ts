@@ -1,5 +1,7 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { map, Observable } from 'rxjs';
+import { API_BASE_URL } from './api-config';
 
 export interface QuizOption {
   id: string;
@@ -18,120 +20,6 @@ export interface QuizTheme {
   name: string;
   category: string;
 }
-
-const LOCAL_THEMES: QuizTheme[] = [
-  { id: 'java', name: 'Java & Spring Boot', category: 'Développement' },
-  { id: 'angular', name: 'Angular & TypeScript', category: 'Développement' },
-  { id: 'general', name: 'Culture Générale Web', category: 'Web & culture numérique' },
-];
-
-const LOCAL_QUESTIONS_BY_THEME: Record<string, QuizQuestion[]> = {
-  java: [
-    {
-      id: 'java-1',
-      questionText: 'Quel mot-clé Java permet de définir une classe ne pouvant pas être instanciée directement ?',
-      options: [
-        { id: 'static', text: 'static' },
-        { id: 'abstract', text: 'abstract' },
-        { id: 'final', text: 'final' },
-        { id: 'private', text: 'private' },
-      ],
-      correctOptionId: 'abstract',
-    },
-    {
-      id: 'java-2',
-      questionText: 'Quelle annotation Spring expose une méthode comme endpoint HTTP ?',
-      options: [
-        { id: 'autowired', text: '@Autowired' },
-        { id: 'entity', text: '@Entity' },
-        { id: 'request-mapping', text: '@RequestMapping' },
-        { id: 'bean', text: '@Bean' },
-      ],
-      correctOptionId: 'request-mapping',
-    },
-    {
-      id: 'java-3',
-      questionText: 'Quelle collection garantit l’unicité de ses éléments ?',
-      options: [
-        { id: 'list', text: 'List' },
-        { id: 'set', text: 'Set' },
-        { id: 'queue', text: 'Queue' },
-        { id: 'array-list', text: 'ArrayList' },
-      ],
-      correctOptionId: 'set',
-    },
-  ],
-  angular: [
-    {
-      id: 'angular-1',
-      questionText: 'Quelle propriété indique qu’un composant Angular est autonome ?',
-      options: [
-        { id: 'standalone-decorator', text: '@Standalone(true)' },
-        { id: 'standalone-component', text: 'standalone: true dans @Component' },
-        { id: 'injectable', text: '@Injectable(true)' },
-        { id: 'automatic', text: 'C’est automatique' },
-      ],
-      correctOptionId: 'standalone-component',
-    },
-    {
-      id: 'angular-2',
-      questionText: 'Quelle directive permet de parcourir une liste dans un template Angular récent ?',
-      options: [
-        { id: 'for', text: '@for' },
-        { id: 'each', text: '@each' },
-        { id: 'ng-repeat', text: '*ng-repeat' },
-        { id: 'loop', text: '@loop' },
-      ],
-      correctOptionId: 'for',
-    },
-    {
-      id: 'angular-3',
-      questionText: 'Quel type représente une valeur qui peut arriver au fil du temps en RxJS ?',
-      options: [
-        { id: 'promise', text: 'Promise' },
-        { id: 'observable', text: 'Observable' },
-        { id: 'iterable', text: 'Iterable' },
-        { id: 'generator-function', text: 'GeneratorFunction' },
-      ],
-      correctOptionId: 'observable',
-    },
-  ],
-  general: [
-    {
-      id: 'general-1',
-      questionText: 'Quel protocole sécurise les échanges web avec TLS ?',
-      options: [
-        { id: 'http', text: 'HTTP' },
-        { id: 'https', text: 'HTTPS' },
-        { id: 'ftp', text: 'FTP' },
-        { id: 'smtp', text: 'SMTP' },
-      ],
-      correctOptionId: 'https',
-    },
-    {
-      id: 'general-2',
-      questionText: 'Quel code HTTP indique généralement une ressource introuvable ?',
-      options: [
-        { id: '200', text: '200' },
-        { id: '301', text: '301' },
-        { id: '404', text: '404' },
-        { id: '500', text: '500' },
-      ],
-      correctOptionId: '404',
-    },
-    {
-      id: 'general-3',
-      questionText: 'Quel format est couramment utilisé pour échanger des données avec une API web ?',
-      options: [
-        { id: 'json', text: 'JSON' },
-        { id: 'mp3', text: 'MP3' },
-        { id: 'png', text: 'PNG' },
-        { id: 'zip', text: 'ZIP' },
-      ],
-      correctOptionId: 'json',
-    },
-  ],
-};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -236,14 +124,18 @@ export function parseQuizQuestions(value: unknown): QuizQuestion[] {
 
 @Injectable({ providedIn: 'root' })
 export class QuizQuestionsService {
+  private readonly http = inject(HttpClient);
+  private readonly apiBaseUrl = inject(API_BASE_URL);
+
   getThemes(): Observable<QuizTheme[]> {
-    return of(parseQuizThemes(LOCAL_THEMES));
+    return this.http.get<unknown>(`${this.apiBaseUrl}/quiz/themes`).pipe(
+      map(parseQuizThemes),
+    );
   }
 
   getQuestions(themeId: string): Observable<QuizQuestion[]> {
-    const questions = Object.prototype.hasOwnProperty.call(LOCAL_QUESTIONS_BY_THEME, themeId)
-      ? LOCAL_QUESTIONS_BY_THEME[themeId]
-      : [];
-    return of(parseQuizQuestions(questions));
+    return this.http.get<unknown>(
+      `${this.apiBaseUrl}/quiz/themes/${encodeURIComponent(themeId)}/questions`,
+    ).pipe(map(parseQuizQuestions));
   }
 }

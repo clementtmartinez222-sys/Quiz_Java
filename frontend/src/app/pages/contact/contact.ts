@@ -9,10 +9,10 @@ import { ContactService, ContactMessage } from '../../services/contact';
 import { requiredTrimmed } from '../../shared/form-validators';
 
 export const CONTACT_FIELD_LIMITS = {
-  // Frontend guardrails; confirm these limits with the API contract during integration.
+  // Keep the browser limits aligned with the API validation rules.
   name: 100,
   email: 254,
-  message: 5000,
+  message: 2000,
 } as const;
 
 function emailTrimmed(control: AbstractControl): ValidationErrors | null {

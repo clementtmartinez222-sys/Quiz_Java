@@ -7,10 +7,12 @@ import { API_BASE_URL } from './services/api-config';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const apiBaseUrl = inject(API_BASE_URL).replace(/\/+$/, '');
-  const isProtectedQuizRequest = req.url.startsWith(`${apiBaseUrl}/quiz/`);
+  const isProtectedRequest = req.url === `${apiBaseUrl}/profile`
+    || req.url === `${apiBaseUrl}/logout`
+    || req.url === `${apiBaseUrl}/quiz/results`;
   const token = localStorage.getItem('token');
 
-  const request = token && isProtectedQuizRequest
+  const request = token && isProtectedRequest
     ? req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
@@ -21,11 +23,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(request).pipe(
     catchError((error: unknown) => {
       if (
-        isProtectedQuizRequest
+        isProtectedRequest
         && error instanceof HttpErrorResponse
         && error.status === 401
       ) {
         localStorage.removeItem('token');
+        localStorage.removeItem('username');
         void router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
       }
       return throwError(() => error);

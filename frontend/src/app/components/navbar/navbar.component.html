@@ -1,54 +1,69 @@
-<nav class="navbar">
-
+<nav class="navbar" aria-label="Navigation principale">
   <div class="navbar-top">
-
-    <a routerLink="/home" class="logo">
-      <img
-        ngSrc="/logo.quizz.png"
-        width="1254"
-        height="1254"
-        alt="Logo QuizCulture"
-        class="logo-icon"
-      >
-
-      <span class="logo-text">
-    Quiz<span>Culture</span>
-  </span>
+    <a
+      routerLink="/home"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
+      class="logo"
+    >
+      <img ngSrc="/logo.quizz.png" width="1254" height="1254" alt="" class="logo-icon" />
+      <span class="logo-text">Quiz<span>Culture</span></span>
     </a>
 
     <div class="navbar-main">
-
-      <a routerLink="/quizz-solo" routerLinkActive="active" class="nav-item main-item">
-        <svg lucideGamepad2 class="icon"></svg>
+      <a
+        routerLink="/quizz-solo"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+        class="nav-item main-item"
+      >
+        <svg lucideGamepad2 class="icon" aria-hidden="true"></svg>
         <span>Quiz solo</span>
       </a>
 
-      <a routerLink="/fiches" routerLinkActive="active" class="nav-item main-item">
-        <svg lucideBookOpen class="icon"></svg>
+      <a
+        routerLink="/fiches"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+        class="nav-item main-item"
+      >
+        <svg lucideBookOpen class="icon" aria-hidden="true"></svg>
         <span>Fiches</span>
       </a>
 
-      <a routerLink="/classement" routerLinkActive="active" class="nav-item main-item">
-        <svg lucideTrophy class="icon"></svg>
+      <a
+        routerLink="/classement"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+        class="nav-item main-item"
+      >
+        <svg lucideTrophy class="icon" aria-hidden="true"></svg>
         <span>Classement</span>
       </a>
-
     </div>
 
     <div class="user-nav">
-
-      <a routerLink="/amis" routerLinkActive="active" class="nav-item user-item">
-        <svg lucideUsers class="icon"></svg>
+      <a
+        routerLink="/amis"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+        class="nav-item user-item"
+      >
+        <svg lucideUsers class="icon" aria-hidden="true"></svg>
         <span class="nav-label">Amis</span>
       </a>
 
-      <a routerLink="/profil" routerLinkActive="active" class="nav-item user-item">
-        <svg lucideUserRound class="icon"></svg>
+      <a
+        routerLink="/profil"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+        class="nav-item user-item"
+      >
+        <svg lucideUserRound class="icon" aria-hidden="true"></svg>
         <span class="nav-label">Profil</span>
       </a>
 
     </div>
-
   </div>
-
 </nav>
