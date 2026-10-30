@@ -63,6 +63,9 @@
   font-weight: 900;
 }
 
+/* L'information reste disponible dans le tableau, sans alourdir l'en-tête. */
+.elo-badge { display: none; }
+
 /* Statistiques */
 
 .stats-grid {
