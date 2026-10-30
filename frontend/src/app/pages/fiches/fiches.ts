@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LucideBookOpen, LucideChevronRight, LucideClock3, LucideFileText, LucideSearch, LucideSparkles } from '@lucide/angular';
+import { LucideChevronRight, LucideClock3, LucideFileText, LucideSearch } from '@lucide/angular';
 
 /** Contrat à réutiliser tel quel avec le futur service API. */
 export interface FicheRevision {
@@ -25,7 +25,7 @@ const FICHES_DEMO: FicheRevision[] = [
 
 @Component({
   selector: 'app-fiches', standalone: true,
-  imports: [CommonModule, FormsModule, LucideBookOpen, LucideChevronRight, LucideClock3, LucideFileText, LucideSearch, LucideSparkles],
+  imports: [CommonModule, FormsModule, LucideChevronRight, LucideClock3, LucideFileText, LucideSearch],
   templateUrl: './fiches.html', styleUrl: './fiches.css',
 })
 export class Fiches {
