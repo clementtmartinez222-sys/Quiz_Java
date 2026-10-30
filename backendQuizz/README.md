@@ -2,16 +2,19 @@
 
 ## Démarrage local
 
-Prérequis : Java 17 ou supérieur et Docker Desktop.
+Prérequis : Java 17 ou supérieur, Maven Wrapper et Docker Desktop.
 
 Depuis `backendQuizz`, démarrez PostgreSQL puis l'application Spring :
 
 ```powershell
 docker compose up -d database
+docker compose ps
 .\mvnw.cmd spring-boot:run
 ```
 
-Le serveur écoute sur `http://localhost:8080`. Au démarrage, `schema.sql` crée les tables et `data.sql` insère les thèmes/questions de démonstration. La base utilise un volume Docker persistant. Les valeurs par défaut de Compose et Spring sont alignées. Pour personnaliser Compose, copiez `.env.example` en `.env`; pour personnaliser aussi l'application Spring lancée dans le terminal, définissez `DATABASE_USER`, `DATABASE_PASSWORD` et `DATABASE_URL` dans son environnement.
+Attendez que la base affiche l'état `healthy` avant de lancer Spring. Le serveur écoute sur `http://localhost:8080`. Au démarrage, `schema.sql` crée les tables attendues par l'API et `data.sql` insère les thèmes/questions de démonstration. Compose utilise le port `5433` côté hôte, aligné avec l'URL JDBC par défaut. Les paramètres locaux par défaut fonctionnent sans fichier `.env`; pour les personnaliser, copiez `.env.example` en `.env`.
+
+La base utilise un volume Docker persistant. Si elle a déjà été créée avec l'ancien schéma, elle ne sera pas convertie automatiquement : sauvegardez-la puis migrez-la avant de lancer cette version. Pour une base locale jetable uniquement, le volume peut être recréé avec `docker compose down -v` puis `docker compose up -d database`; cette opération supprime les données locales.
 
 Les identifiants par défaut du Compose sont réservés au développement local. En production, configurez des secrets distincts, HTTPS et une URL de base de données non locale.
 

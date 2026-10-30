@@ -1,20 +1,21 @@
-version: '3.1'
 services:
   database:
     container_name: quizz_database
-    image: postgres
+    image: postgres:16
     restart: always
-    env_file:
-      - .env
     environment:
-      POSTGRES_USER : ${DATABASE_USER}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER:-quiz_user}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-quiz_local_dev}
+      POSTGRES_DB: ${DATABASE_NAME:-quizz_db}
     ports:
-      - "5432:5432"
+      - "${DATABASE_HOST_PORT:-5433}:5432"
     volumes:
-      - ./initdb/1_TABLES.sql:/docker-entrypoint-initdb.d/1_TABLE.sql
-      - postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres_data:
