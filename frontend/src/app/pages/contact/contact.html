@@ -1,1 +1,114 @@
-<p>contact works!</p>
+<div class="contact-container form-page-container">
+  <h2>Contactez-nous</h2>
+
+  <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" [attr.aria-busy]="isSubmitting">
+    <fieldset class="contact-fields">
+      <div class="form-group">
+        <label for="name">Nom</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          placeholder="Votre nom"
+          autocomplete="name"
+          [attr.maxlength]="fieldLimits.name"
+          [attr.aria-invalid]="
+            contactForm.controls.name.invalid && contactForm.controls.name.touched
+          "
+          [attr.aria-describedby]="
+            contactForm.controls.name.invalid && contactForm.controls.name.touched
+              ? 'name-error'
+              : null
+          "
+        />
+        @if (contactForm.controls.name.invalid && contactForm.controls.name.touched) {
+          <div class="error" id="name-error">
+            @if (contactForm.controls.name.hasError('required')) {
+              Le nom est requis.
+            } @else {
+              Le nom ne peut pas dépasser {{ fieldLimits.name }} caractères.
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="votre@email.com"
+          autocomplete="email"
+          [attr.maxlength]="fieldLimits.email"
+          [attr.aria-invalid]="
+            contactForm.controls.email.invalid && contactForm.controls.email.touched
+          "
+          [attr.aria-describedby]="
+            contactForm.controls.email.invalid && contactForm.controls.email.touched
+              ? 'email-error'
+              : null
+          "
+        />
+        @if (contactForm.controls.email.invalid && contactForm.controls.email.touched) {
+          <div class="error" id="email-error">
+            @if (contactForm.controls.email.hasError('required')) {
+              L'adresse email est requise.
+            } @else if (contactForm.controls.email.hasError('maxlength')) {
+              L'adresse email ne peut pas dépasser {{ fieldLimits.email }} caractères.
+            } @else {
+              Veuillez entrer une adresse email valide.
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="message">Message</label>
+        <textarea
+          id="message"
+          formControlName="message"
+          rows="2"
+          placeholder="Votre message (10 caractères min.)..."
+          [attr.maxlength]="fieldLimits.message"
+          [attr.aria-invalid]="
+            contactForm.controls.message.invalid && contactForm.controls.message.touched
+          "
+          [attr.aria-describedby]="
+            contactForm.controls.message.invalid && contactForm.controls.message.touched
+              ? 'message-error'
+              : null
+          "
+        ></textarea>
+        @if (contactForm.controls.message.invalid && contactForm.controls.message.touched) {
+          <div class="error" id="message-error">
+            @if (contactForm.controls.message.hasError('required')) {
+              Le message est requis.
+            } @else if (contactForm.controls.message.hasError('minlength')) {
+              Le message doit contenir au moins 10 caractères.
+            } @else {
+              Le message ne peut pas dépasser {{ fieldLimits.message }} caractères.
+            }
+          </div>
+        }
+      </div>
+    </fieldset>
+
+    <div class="feedback-slot">
+      @if (errorMessage) {
+        <div class="error-message" role="alert" aria-live="assertive">
+          {{ errorMessage }}
+        </div>
+      }
+      @if (submissionComplete) {
+        <div class="success-message" role="status" aria-live="polite">
+          Votre message a bien été envoyé. Merci de nous avoir contactés !
+        </div>
+      }
+    </div>
+    <div class="contact-actions">
+      <button type="submit">Envoyer</button>
+      <a routerLink="/home" class="button-link btn-back">Retour à l'accueil</a>
+    </div>
+  </form>
+</div>

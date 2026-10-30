@@ -1,1 +1,17 @@
-<p>home works!</p>
+@if (isLoggedIn) {
+  <section class="home-container" aria-labelledby="home-title">
+    <h1 id="home-title">Connecté</h1>
+    <div class="home-actions">
+      <a routerLink="/quizz-solo" class="btn-primary">🎮 Lancer un Quiz Solo</a>
+      <button type="button" class="btn-secondary" (click)="onLogout()">Se déconnecter</button>
+    </div>
+  </section>
+} @else {
+  <section class="home-container" aria-labelledby="home-title">
+    <h1 id="home-title">Bienvenue sur Quiz</h1>
+    <p>Connecte-toi pour suivre tes scores et relever les défis.</p>
+    <div class="home-actions">
+      <a routerLink="/quizz-solo" class="btn-primary">🎮 Lancer un Quiz Solo</a>
+    </div>
+  </section>
+}
