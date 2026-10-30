@@ -1,1 +1,66 @@
-<p>contact works!</p>
+<div class="contact-container">
+  <h2>Contactez-nous</h2>
+
+  <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="name">Nom</label>
+      <input
+        id="name"
+        type="text"
+        formControlName="name"
+        placeholder="Votre nom"
+      />
+      @if (contactForm.get('name')?.invalid && contactForm.get('name')?.touched) {
+        <div class="error">
+          Le nom est requis.
+        </div>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        placeholder="votre@email.com"
+      />
+      @if (contactForm.get('email')?.invalid && contactForm.get('email')?.touched) {
+        <div class="error">
+          Veuillez entrer une adresse email valide.
+        </div>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="message">Message</label>
+      <textarea
+        id="message"
+        formControlName="message"
+        rows="4"
+        placeholder="Votre message (10 caractères min.)..."
+      ></textarea>
+      @if (contactForm.get('message')?.invalid && contactForm.get('message')?.touched) {
+        <div class="error">
+          Le message doit contenir au moins 10 caractères.
+        </div>
+      }
+    </div>
+
+    @if (successMessage) {
+      <div class="success-message">
+        {{ successMessage }}
+      </div>
+    }
+
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <button type="submit" [disabled]="contactForm.invalid">Envoyer</button>
+  </form>
+
+  <button routerLink="/home" type="button" class="btn-back">Retour à l'accueil</button>
+</div>

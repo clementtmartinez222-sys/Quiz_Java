@@ -6,6 +6,8 @@ import { Fiches } from './pages/fiches/fiches';
 import { ClassementComponent } from './pages/classement/classement';
 import { AmisComponent } from './pages/amis/amis';
 import { Profil } from './pages/profil/profil';
+import { Login } from './pages/login/login';
+import { Register } from './pages/register/register';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -16,5 +18,7 @@ export const routes: Routes = [
   { path: 'classement', component: ClassementComponent },
   { path: 'amis', component: AmisComponent },
   { path: 'profil', component: Profil },
+  { path: 'login', component: Login },
+  { path: 'register', component: Register },
   { path: '**', redirectTo: 'home' }
 ];

@@ -1,0 +1,51 @@
+<div class="register-container">
+  <h2>Inscription</h2>
+
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="username">Nom d'utilisateur</label>
+      <input
+        id="username"
+        type="text"
+        formControlName="username"
+        placeholder="Choisissez un nom d'utilisateur"
+      />
+      @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
+        <div class="error">
+          Le nom d'utilisateur est requis.
+        </div>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="password">Mot de passe</label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        placeholder="Choisissez un mot de passe"
+      />
+      @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+        <div class="error">
+          Le mot de passe doit contenir au moins 4 caractères.
+        </div>
+      }
+    </div>
+
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
+
+    @if (successMessage) {
+      <div class="success-message">
+        {{ successMessage }}
+      </div>
+    }
+
+    <button type="submit" [disabled]="registerForm.invalid">S'inscrire</button>
+  </form>
+
+  <button routerLink="/login" type="button" class="btn-secondary">Déjà un compte ? Se connecter</button>
+</div>
