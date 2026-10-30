@@ -1,14 +1,20 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: backendQuizz
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/quizz_db}
-    username: ${DATABASE_USER:quiz_user}
-    password: ${DATABASE_PASSWORD:quiz_local_dev}
+    url: ${SPRING_DATASOURCE_URL:${DATABASE_URL:jdbc:postgresql://localhost:5433/quizz_db}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DATABASE_USER:quiz_user}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DATABASE_PASSWORD:quiz_local_dev}}
     driver-class-name: org.postgresql.Driver
   sql:
     init:
       mode: always
       continue-on-error: false
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
 server:
   port: ${SERVER_PORT:8080}
