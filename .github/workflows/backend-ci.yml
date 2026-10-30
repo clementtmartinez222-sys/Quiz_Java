@@ -1,0 +1,34 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - "backendQuizz/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "backendQuizz/**"
+      - ".github/workflows/backend-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Test backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Run backend tests
+        run: |
+          chmod +x backendQuizz/mvnw
+          ./backendQuizz/mvnw -f backendQuizz/pom.xml test

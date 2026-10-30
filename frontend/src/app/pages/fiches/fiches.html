@@ -1,7 +1,74 @@
 <main class="fiches-page">
-  <header class="page-header"><div><span class="site-label">QUIZCULTURE · RÉVISIONS</span><h1>Mes fiches</h1><p>Prépare-toi à ton rythme avec des fiches courtes sur les thèmes de ton choix.</p></div></header>
-  <section class="toolbar" aria-label="Filtrer les fiches"><div class="search-box"><svg lucideSearch aria-hidden="true"></svg><input type="search" [(ngModel)]="recherche" placeholder="Rechercher une fiche..." aria-label="Rechercher une fiche"></div><div class="categories" aria-label="Catégories"><button *ngFor="let categorie of categories" type="button" (click)="selectionnerCategorie(categorie)" [class.active]="categorie === categorieActive">{{ categorie }}</button></div></section>
-  <div class="results-line"><h2>Fiches disponibles</h2><span>{{ fichesFiltrees.length }} fiche(s)</span></div>
-  <section class="fiches-grid" *ngIf="fichesFiltrees.length; else aucuneFiche"><article class="fiche-card" *ngFor="let fiche of fichesFiltrees"><div [class]="'fiche-icon ' + fiche.couleur"><svg lucideFileText aria-hidden="true"></svg></div><span class="category-tag">{{ fiche.categorie }}</span><h3>{{ fiche.titre }}</h3><p>{{ fiche.description }}</p><footer><span><svg lucideClock3 aria-hidden="true"></svg>{{ fiche.dureeLecture }} min</span><span>{{ fiche.nombreNotions }} notions</span></footer><button class="read-button" type="button" [attr.aria-label]="'Lire la fiche ' + fiche.titre">Lire la fiche <svg lucideChevronRight aria-hidden="true"></svg></button></article></section>
-  <ng-template #aucuneFiche><section class="empty-state"><svg lucideSearch aria-hidden="true"></svg><h2>Aucune fiche trouvée</h2><p>Essaie un autre mot-clé ou une autre catégorie.</p></section></ng-template>
+  <header class="page-header">
+    <div>
+      <span class="site-label">QUIZCULTURE · RÉVISIONS</span>
+      <h1>Mes fiches</h1>
+      <p>Des repères clairs pour apprendre un peu chaque jour.</p>
+    </div>
+    <div class="header-illustration" aria-hidden="true">
+      <svg lucideFileText></svg><span class="sparkle">✦</span>
+    </div>
+  </header>
+
+  <section class="toolbar" aria-label="Filtrer les fiches">
+    <label class="search-box">
+      <svg lucideSearch aria-hidden="true"></svg>
+      <input type="search" [(ngModel)]="recherche" placeholder="Rechercher une fiche..." aria-label="Rechercher une fiche">
+    </label>
+    <div class="categories" aria-label="Catégories">
+      <button *ngFor="let categorie of categories" type="button" (click)="selectionnerCategorie(categorie)"
+        [class.active]="categorie === categorieActive" [attr.aria-pressed]="categorie === categorieActive">{{ categorie }}</button>
+    </div>
+  </section>
+
+  <aside class="revision-tip">
+    <span class="revision-tip-icon" aria-hidden="true">✦</span>
+    <p><strong>Un petit pas suffit.</strong> Parcours une fiche, puis teste ce que tu viens d’apprendre.</p>
+    <a routerLink="/quizz-solo">Trouver un quiz <span aria-hidden="true">→</span></a>
+  </aside>
+
+  <p *ngIf="loading" role="status" class="empty-state">Chargement des fiches…</p>
+  <section *ngIf="loadError" class="empty-state" role="alert">
+    <h2>Chargement impossible</h2><p>Les fiches n’ont pas pu être récupérées.</p>
+    <button type="button" (click)="loadSheets()">Réessayer</button>
+  </section>
+
+  <ng-container *ngIf="!loading && !loadError">
+    <div class="results-line"><h2>À découvrir</h2><span>{{ fichesFiltrees.length }} fiche(s)</span></div>
+    <section class="fiches-grid" *ngIf="fichesFiltrees.length > 0; else aucuneFiche">
+      <article class="fiche-card" *ngFor="let fiche of fichesFiltrees">
+        <div [class]="'fiche-icon ' + fiche.couleur"><svg lucideFileText aria-hidden="true"></svg></div>
+        <span class="category-tag">{{ fiche.categorie }}</span>
+        <h3>{{ fiche.titre }}</h3><p>{{ fiche.description }}</p>
+        <footer><span><svg lucideClock3 aria-hidden="true"></svg>{{ fiche.dureeLecture }} min</span><span>{{ fiche.nombreNotions }} notions</span></footer>
+        <button class="read-button" type="button" (click)="ouvrirFiche(fiche)" [attr.aria-label]="'Lire la fiche ' + fiche.titre">Lire la fiche <svg lucideChevronRight aria-hidden="true"></svg></button>
+        <a class="quiz-link" routerLink="/quizz-solo" [queryParams]="{ theme: fiche.quizId }">Faire le quiz associé <span aria-hidden="true">→</span></a>
+      </article>
+    </section>
+    <ng-template #aucuneFiche><section class="empty-state"><svg lucideSearch aria-hidden="true"></svg><h2>Aucune fiche trouvée</h2><p>Essaie un autre mot-clé ou une autre catégorie.</p></section></ng-template>
+  </ng-container>
 </main>
+
+<ng-container *ngIf="ficheActive as fiche">
+  <div class="fiche-dialog-backdrop" (click)="fermerFiche()">
+    <section class="fiche-dialog" role="dialog" aria-modal="true" tabindex="-1" [attr.aria-label]="fiche.titre" (click)="$event.stopPropagation()">
+      <header class="fiche-dialog-header">
+        <div class="fiche-dialog-mark"><svg lucideFileText aria-hidden="true"></svg></div>
+        <button #dialogClose class="fiche-dialog-close" type="button" aria-label="Fermer la fiche" (click)="fermerFiche()">×</button>
+      </header>
+      <span class="fiche-dialog-kicker">FICHE DE RÉVISION · {{ fiche.categorie }}</span>
+      <h2>{{ fiche.titre }}</h2>
+      <p class="fiche-dialog-description">{{ fiche.description }}</p>
+      <div class="fiche-dialog-meta"><span><svg lucideClock3 aria-hidden="true"></svg>{{ fiche.dureeLecture }} min de lecture</span><span>{{ fiche.notions.length }} notions clés</span></div>
+      <ol class="notion-list">
+        @for (notion of fiche.notions; track notion; let index = $index) {
+          <li><span class="notion-number">{{ (index + 1).toString().padStart(2, '0') }}</span><p>{{ notion }}</p></li>
+        }
+      </ol>
+      <footer class="fiche-dialog-actions">
+        <a class="fiche-quiz-action" routerLink="/quizz-solo" [queryParams]="{ theme: fiche.quizId }" (click)="fermerFiche()">Tester mes connaissances <span aria-hidden="true">→</span></a>
+        <button class="fiche-close-action" type="button" (click)="fermerFiche()">Terminer la lecture</button>
+      </footer>
+    </section>
+  </div>
+</ng-container>

@@ -1,18 +1,28 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { EMPTY, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { API_BASE_URL, QUIZ_RESULT_SUBMISSION_ENABLED } from './api-config';
 import { AuthService } from './auth';
 
+export interface QuizAnswerSubmission {
+  questionId: string;
+  selectedOptionId: string | null;
+  responseTimeSeconds: number;
+}
+
 export interface QuizResultPayload {
   themeId: string;
+  answers: QuizAnswerSubmission[];
+}
+
+export interface QuizGradeResponse {
   correctAnswersCount: number;
   maxConsecutiveCorrect: number;
   averageResponseTimeSeconds: number;
   totalQuestions: number;
+  correctOptionIds: Record<string, string>;
 }
 
-// Scores are computed in the browser and must not be treated as authoritative by the backend.
 @Injectable({ providedIn: 'root' })
 export class QuizResultsService {
   private readonly http = inject(HttpClient);
@@ -20,12 +30,10 @@ export class QuizResultsService {
   private readonly submissionEnabled = inject(QUIZ_RESULT_SUBMISSION_ENABLED);
   private readonly auth = inject(AuthService);
 
-  get isSubmissionEnabled(): boolean {
-    return this.submissionEnabled && this.auth.isLoggedIn();
-  }
+  get isSubmissionEnabled(): boolean { return this.submissionEnabled && this.auth.isLoggedIn(); }
 
-  submitResult(result: QuizResultPayload): Observable<void> {
-    if (!this.isSubmissionEnabled) return EMPTY;
-    return this.http.post<void>(`${this.apiBaseUrl}/quiz/results`, result);
+  gradeAndSubmit(result: QuizResultPayload): Observable<QuizGradeResponse> {
+    const endpoint = this.isSubmissionEnabled ? 'results' : 'grade';
+    return this.http.post<QuizGradeResponse>(`${this.apiBaseUrl}/quiz/${endpoint}`, result);
   }
 }

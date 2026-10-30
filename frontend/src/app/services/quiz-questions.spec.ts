@@ -24,13 +24,13 @@ describe('QuizQuestionsService', () => {
     const request = httpTesting.expectOne('/api/quiz/themes');
     expect(request.request.method).toBe('GET');
     request.flush([
-      { id: 'angular', name: 'Angular & TypeScript', category: 'Développement' },
-      { id: 'java', name: 'Java & Spring Boot', category: 'Développement' },
+      { id: 'angular', name: 'Angular & TypeScript', category: 'Programmation' },
+      { id: 'java', name: 'Java & Spring Boot', category: 'Programmation' },
     ]);
 
     expect(themes).toEqual([
-      { id: 'angular', name: 'Angular & TypeScript', category: 'Développement' },
-      { id: 'java', name: 'Java & Spring Boot', category: 'Développement' },
+      { id: 'angular', name: 'Angular & TypeScript', category: 'Programmation' },
+      { id: 'java', name: 'Java & Spring Boot', category: 'Programmation' },
     ]);
   });
 
@@ -38,7 +38,6 @@ describe('QuizQuestionsService', () => {
     let questionText = '';
     service.getQuestions('angular').subscribe((questions) => {
       questionText = questions[0].questionText;
-      expect(questions[0].correctOptionId).toBe('observable');
       expect(questions[0].options.map((option) => option.id)).toContain('observable');
     });
 
@@ -47,7 +46,6 @@ describe('QuizQuestionsService', () => {
     request.flush([{
       id: '42',
       questionText: 'Question API',
-      correctOptionId: 'observable',
       options: [
         { id: 'promise', text: 'Promise' },
         { id: 'observable', text: 'Observable' },
@@ -76,19 +74,12 @@ describe('QuizQuestionsService', () => {
     ])).toThrow('duplicate id');
   });
 
-  it('rejects malformed questions and invalid correct-option references', () => {
+  it('rejects malformed questions without requiring or accepting a correct answer', () => {
     expect(() => parseQuizQuestions({ questions: [] })).toThrow('expected an array');
     expect(() => parseQuizQuestions([{
       id: 'invalid',
       questionText: 'Question',
       options: [{ id: 'only', text: 'Only one choice' }],
-      correctOptionId: 'only',
-    }])).toThrow('required fields or answer choices are missing');
-    expect(() => parseQuizQuestions([{
-      id: 'invalid',
-      questionText: 'Question',
-      options: [{ id: 'one', text: 'One' }, { id: 'two', text: 'Two' }],
-      correctOptionId: 'missing',
-    }])).toThrow('correct answer is not an available choice');
+  }])).toThrow('required fields or answer choices are missing');
   });
 });

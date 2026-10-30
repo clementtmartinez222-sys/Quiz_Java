@@ -1,9 +1,9 @@
-<nav class="navbar">
+<nav class="navbar" aria-label="Navigation principale">
 
   <div class="navbar-top">
 
-    <a routerLink="/jeu" class="logo">
-      <img src="/logo.quizz.png" alt="Logo QuizCulture" class="logo-icon">
+    <a routerLink="/home" class="logo" aria-label="QuizCulture, accueil">
+      <img src="/logo.quizz.png" alt="" class="logo-icon">
 
       <span class="logo-text">
     Quiz<span>Culture</span>
@@ -12,17 +12,21 @@
 
     <div class="navbar-main">
 
-      <a routerLink="/jeu" routerLinkActive="active" class="nav-item main-item">
+      <a routerLink="/home" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-item main-item">
+        <span>Accueil</span>
+      </a>
+
+      <a routerLink="/quizz-solo" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-item main-item">
         <svg lucideGamepad2 class="icon"></svg>
         <span>Jeu</span>
       </a>
 
-      <a routerLink="/fiches" routerLinkActive="active" class="nav-item main-item">
+      <a routerLink="/fiches" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-item main-item">
         <svg lucideBookOpen class="icon"></svg>
         <span>Fiches</span>
       </a>
 
-      <a routerLink="/classement" routerLinkActive="active" class="nav-item main-item">
+      <a routerLink="/classement" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-item main-item">
         <svg lucideTrophy class="icon"></svg>
         <span>Classement</span>
       </a>
@@ -31,19 +35,14 @@
 
     <div class="user-nav">
 
-      <a routerLink="/login" routerLinkActive="active" class="nav-item user-item">
-        <svg lucideLogIn class="icon"></svg>
-        <span class="nav-label">Connexion</span>
-      </a>
-
-      <a routerLink="/amis" routerLinkActive="active" class="nav-item user-item">
+      <a routerLink="/amis" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-item user-item">
         <svg lucideUsers class="icon"></svg>
         <span class="nav-label">Amis</span>
       </a>
 
-      <a routerLink="/profil" routerLinkActive="active" class="nav-item user-item">
+      <a routerLink="/profil" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-item user-item">
         <svg lucideUserRound class="icon"></svg>
-        <span class="nav-label">Profil</span>
+        <span class="nav-label">{{ isLoggedIn() ? 'Mon profil' : 'Profil' }}</span>
       </a>
 
     </div>

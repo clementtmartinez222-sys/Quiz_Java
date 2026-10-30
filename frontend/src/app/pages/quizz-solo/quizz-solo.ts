@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription, timeout } from 'rxjs';
 import { API_REQUEST_TIMEOUT_MS } from '../../services/api-config';
 import { QuizQuestion, QuizQuestionsService, QuizTheme } from '../../services/quiz-questions';
@@ -38,12 +39,13 @@ export function groupQuizThemes(themes: QuizTheme[]): QuizThemeGroup[] {
 })
 export class QuizzSolo implements OnInit, OnDestroy {
   private readonly quizQuestions = inject(QuizQuestionsService);
+  private readonly route = inject(ActivatedRoute);
   private readonly quizResults = inject(QuizResultsService);
   private readonly requestTimeoutMs = inject(API_REQUEST_TIMEOUT_MS);
   private readonly ngZone = inject(NgZone);
   private readonly changeDetector = inject(ChangeDetectorRef);
 
-  step: 'theme' | 'loading' | 'playing' | 'result' | 'empty' | 'error' = 'theme';
+  step: 'theme' | 'loading' | 'playing' | 'grading' | 'result' | 'empty' | 'error' = 'theme';
   themeGroups: QuizThemeGroup[] = [];
   themeLoading = true;
   themeLoadError = false;
@@ -60,7 +62,7 @@ export class QuizzSolo implements OnInit, OnDestroy {
   resultSubmissionStatus: 'idle' | 'saving' | 'saved' | 'failed' = 'idle';
   loadErrorMessage = '';
 
-  readonly QUESTION_TIME = 5;
+  readonly QUESTION_TIME = 10;
   readonly ANSWER_REVEAL_TIME = 1.5;
   timeLeft = this.QUESTION_TIME;
   timerProgressPercent = 100;
@@ -73,6 +75,8 @@ export class QuizzSolo implements OnInit, OnDestroy {
   private quizRunGeneration = 0;
   isAnsweredOrTimeout = false;
   selectedOptionId: string | null = null;
+  private answerSubmissions: Array<{ questionId: string; selectedOptionId: string | null; responseTimeSeconds: number }> = [];
+  correctOptionIds: Record<string, string> = {};
 
   get completedQuestionCount(): number {
     if (this.questions.length === 0) return 0;
@@ -92,6 +96,11 @@ export class QuizzSolo implements OnInit, OnDestroy {
     return this.questions[this.currentQuestionIndex];
   }
 
+  get isResultPersisted(): boolean { return this.quizResults.isSubmissionEnabled; }
+  get submittedAnswers(): Array<{ questionId: string; selectedOptionId: string | null; responseTimeSeconds: number }> {
+    return this.answerSubmissions;
+  }
+
   ngOnInit(): void {
     this.loadThemes();
   }
@@ -106,6 +115,10 @@ export class QuizzSolo implements OnInit, OnDestroy {
       next: (themes) => {
         this.themeGroups = groupQuizThemes(themes);
         this.themeLoading = false;
+        const requestedTheme = this.route.snapshot.queryParamMap.get('theme');
+        if (requestedTheme && themes.some(theme => theme.id === requestedTheme)) {
+          this.selectTheme(requestedTheme);
+        }
         this.changeDetector.markForCheck();
       },
       error: (error: unknown) => {
@@ -212,13 +225,11 @@ export class QuizzSolo implements OnInit, OnDestroy {
     this.stopTimer();
     this.responseTimes.push(duration);
 
-    if (optionId === this.currentQuestion.correctOptionId) {
-      this.score++;
-      this.currentStreak++;
-      this.maxStreak = Math.max(this.currentStreak, this.maxStreak);
-    } else {
-      this.currentStreak = 0;
-    }
+    this.answerSubmissions.push({
+      questionId: this.currentQuestion.id,
+      selectedOptionId: optionId,
+      responseTimeSeconds: Math.max(0, Math.min(duration, this.QUESTION_TIME)),
+    });
 
     this.revealTimeout = setTimeout(() => {
       this.ngZone.run(() => {
@@ -244,27 +255,25 @@ export class QuizzSolo implements OnInit, OnDestroy {
   private endQuiz(): void {
     this.stopTimer();
     this.stopRevealTimeout();
-    this.averageResponseTimeSeconds = this.responseTimes.length > 0
-      ? Number((this.responseTimes.reduce((total, time) => total + time, 0)
-        / this.responseTimes.length).toFixed(2))
-      : 0;
-    this.step = 'result';
+    this.step = 'grading';
 
-    if (this.selectedTheme !== null && this.quizResults.isSubmissionEnabled) {
+    if (this.selectedTheme !== null) {
       const resultGeneration = this.quizRunGeneration;
       this.resultSubmissionStatus = 'saving';
-      this.quizResults.submitResult({
+      this.quizResults.gradeAndSubmit({
         themeId: this.selectedTheme,
-        correctAnswersCount: this.score,
-        maxConsecutiveCorrect: this.maxStreak,
-        averageResponseTimeSeconds: this.averageResponseTimeSeconds,
-        totalQuestions: this.questions.length,
+        answers: this.answerSubmissions,
       }).pipe(
         timeout({ first: this.requestTimeoutMs }),
       ).subscribe({
-        next: () => {
+        next: (result) => {
           if (this.quizRunGeneration === resultGeneration) {
+            this.score = result.correctAnswersCount;
+            this.maxStreak = result.maxConsecutiveCorrect;
+            this.averageResponseTimeSeconds = result.averageResponseTimeSeconds;
+            this.correctOptionIds = result.correctOptionIds;
             this.resultSubmissionStatus = 'saved';
+            this.step = 'result';
             this.changeDetector.markForCheck();
           }
         },
@@ -272,6 +281,7 @@ export class QuizzSolo implements OnInit, OnDestroy {
           console.error('Erreur lors de l’enregistrement du résultat du quiz', error);
           if (this.quizRunGeneration === resultGeneration) {
             this.resultSubmissionStatus = 'failed';
+            this.step = 'result';
             this.changeDetector.markForCheck();
           }
         },
@@ -297,6 +307,8 @@ export class QuizzSolo implements OnInit, OnDestroy {
     this.currentStreak = 0;
     this.maxStreak = 0;
     this.responseTimes = [];
+    this.answerSubmissions = [];
+    this.correctOptionIds = {};
     this.averageResponseTimeSeconds = 0;
     this.resultSubmissionStatus = 'idle';
     this.loadErrorMessage = '';

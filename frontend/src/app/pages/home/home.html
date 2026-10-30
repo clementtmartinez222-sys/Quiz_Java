@@ -1,17 +1,25 @@
-@if (isLoggedIn) {
+<main class="home-page">
   <section class="home-container" aria-labelledby="home-title">
-    <h1 id="home-title">Connecté</h1>
-    <div class="home-actions">
-      <a routerLink="/quizz-solo" class="btn-primary">🎮 Lancer un Quiz Solo</a>
-      <button type="button" class="btn-secondary" (click)="onLogout()">Se déconnecter</button>
+    <div class="home-copy">
+      <span class="home-eyebrow">APPRENDRE · JOUER · PROGRESSER</span>
+      <h1 id="home-title">@if (isLoggedIn) { Prêt pour un nouveau défi ? } @else { La culture générale devient un jeu. }</h1>
+      <p>@if (isLoggedIn) { Choisis un thème, teste tes connaissances et retrouve tes résultats dans ton profil. } @else { Explore des thèmes variés, révise à ton rythme et mesure tes progrès au fil des parties. }</p>
+      <div class="home-actions">
+        <a routerLink="/quizz-solo" class="btn-primary">Lancer un quiz <span aria-hidden="true">→</span></a>
+        <a routerLink="/fiches" class="btn-secondary">Explorer les fiches</a>
+      </div>
+      @if (!isLoggedIn) { <small>La partie est accessible sans compte. Connecte-toi pour conserver tes scores.</small> }
+    </div>
+    <div class="home-art" aria-hidden="true">
+      <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+      <div class="spark spark-one">✦</div><div class="spark spark-two">✦</div>
+      <div class="quiz-card-float"><span>QUESTION DU JOUR</span><strong>Prêt à apprendre quelque chose de nouveau ?</strong><div class="answer-pills"><i></i><i></i><i></i></div></div>
+      <div class="score-bubble"><span>✦</span><strong>+1</strong><small>bonne réponse</small></div>
     </div>
   </section>
-} @else {
-  <section class="home-container" aria-labelledby="home-title">
-    <h1 id="home-title">Bienvenue sur Quiz</h1>
-    <p>Connecte-toi pour suivre tes scores et relever les défis.</p>
-    <div class="home-actions">
-      <a routerLink="/quizz-solo" class="btn-primary">🎮 Lancer un Quiz Solo</a>
-    </div>
+  <section class="home-features" aria-label="Découvrir QuizCulture">
+    <a routerLink="/quizz-solo" class="feature-card"><span class="feature-icon quiz-icon">✦</span><span><strong>Quiz thématiques</strong><small>Histoire, sciences, cinéma et numérique.</small></span><b aria-hidden="true">→</b></a>
+    <a routerLink="/fiches" class="feature-card"><span class="feature-icon sheet-icon">▤</span><span><strong>Fiches de révision</strong><small>Des notions courtes pour consolider tes connaissances.</small></span><b aria-hidden="true">→</b></a>
+    <a routerLink="/classement" class="feature-card"><span class="feature-icon rank-icon">↗</span><span><strong>Progression</strong><small>Compare tes résultats et garde le rythme.</small></span><b aria-hidden="true">→</b></a>
   </section>
-}
+</main>

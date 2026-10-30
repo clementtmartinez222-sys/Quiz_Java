@@ -1,71 +1,58 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LucideCrown, LucideMedal, LucideSearch, LucideSearchX, LucideSwords, LucideTrophy, LucideUsers } from '@lucide/angular';
+import { LucideCrown, LucideMedal, LucideSearch, LucideSearchX, LucideTrophy, LucideUsers } from '@lucide/angular';
+import { LeaderboardPlayer, LeaderboardService } from '../../services/leaderboard';
 
-interface Joueur {
-  id: number;
-  pseudo: string;
-  elo: number;
-  victoires: number;
-  matchs: number;
-}
+type SortKey = 'score' | 'quizzes' | 'correct';
 
 @Component({
   selector: 'app-classement',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideCrown, LucideMedal, LucideSearch, LucideSearchX, LucideSwords, LucideTrophy, LucideUsers],
+  imports: [CommonModule, FormsModule, LucideCrown, LucideMedal, LucideSearch, LucideSearchX, LucideTrophy, LucideUsers],
   templateUrl: './classement.html',
-  styleUrls: ['./classement.css']
+  styleUrl: './classement.css',
 })
-export class ClassementComponent {
+export class ClassementComponent implements OnInit {
+  private readonly leaderboard = inject(LeaderboardService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   recherche = '';
-  tri: 'elo' | 'victoires' | 'matchs' = 'elo';
+  tri: SortKey = 'score';
+  joueurs: LeaderboardPlayer[] = [];
+  loading = true;
+  loadError = false;
 
-  // Données de démonstration à remplacer par les joueurs de ton site.
-  joueurs: Joueur[] = [
-    { id: 1, pseudo: 'Alex_Du_73', elo: 1842, victoires: 42, matchs: 60 },
-    { id: 2, pseudo: 'LéoB', elo: 1765, victoires: 36, matchs: 55 },
-    { id: 3, pseudo: 'ZoéT', elo: 1698, victoires: 31, matchs: 51 },
-    { id: 4, pseudo: 'Mathis42', elo: 1580, victoires: 24, matchs: 50 },
-    { id: 5, pseudo: 'CamilleS', elo: 1524, victoires: 21, matchs: 43 },
-    { id: 6, pseudo: 'Romain_', elo: 1460, victoires: 18, matchs: 42 },
-    { id: 7, pseudo: 'NinaQuiz', elo: 1390, victoires: 14, matchs: 35 },
-    { id: 8, pseudo: 'TomFR', elo: 1250, victoires: 8, matchs: 30 }
-  ];
+  ngOnInit(): void { this.loadPlayers(); }
 
-  get joueursFiltres(): Joueur[] {
+  loadPlayers(): void {
+    this.loading = true;
+    this.loadError = false;
+    this.leaderboard.getPlayers().subscribe({
+      next: (players) => {
+        this.joueurs = players;
+        this.loading = false;
+        this.changeDetector.markForCheck();
+      },
+      error: (error: unknown) => {
+        console.error('Impossible de charger le classement.', error);
+        this.loading = false;
+        this.loadError = true;
+        this.changeDetector.markForCheck();
+      },
+    });
+  }
+
+  get joueursFiltres(): LeaderboardPlayer[] {
     const terme = this.recherche.trim().toLocaleLowerCase('fr');
-
-    return this.joueurs
-      .filter(joueur =>
-        joueur.pseudo.toLocaleLowerCase('fr').includes(terme)
-      )
-      .sort((a, b) => {
-        if (this.tri === 'victoires') {
-          return b.victoires - a.victoires;
-        }
-
-        if (this.tri === 'matchs') {
-          return b.matchs - a.matchs;
-        }
-
-        return b.elo - a.elo;
-      });
+    const filtered = this.joueurs.filter((player) => player.username.toLocaleLowerCase('fr').includes(terme));
+    return filtered.sort((a, b) => {
+      if (this.tri === 'quizzes') return b.quizzesPlayed - a.quizzesPlayed || b.averageScore - a.averageScore;
+      if (this.tri === 'correct') return b.correctAnswers - a.correctAnswers || b.averageScore - a.averageScore;
+      return b.averageScore - a.averageScore || b.quizzesPlayed - a.quizzesPlayed;
+    });
   }
 
-  get meilleurElo(): number {
-    return this.joueurs.length
-      ? Math.max(...this.joueurs.map(joueur => joueur.elo))
-      : 0;
-  }
-
-  get totalMatchs(): number {
-    return this.joueurs.reduce(
-      (total, joueur) => total + joueur.matchs,
-      0
-    );
-  }
+  get meilleurScore(): number { return Math.max(0, ...this.joueurs.map((player) => player.averageScore)); }
+  get totalQuizzes(): number { return this.joueurs.reduce((total, player) => total + player.quizzesPlayed, 0); }
 }
-

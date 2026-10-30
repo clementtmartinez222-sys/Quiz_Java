@@ -1,8 +1,10 @@
-<div class="quizz-container">
+<div class="quizz-container" [class.quiz-theme-layout]="step === 'theme'">
 
   @if (step === 'theme') {
     <div class="theme-selection">
+      <span class="quiz-eyebrow">À TOI DE JOUER</span>
       <h2>Choisissez un thème pour le Quiz Solo</h2>
+      <p class="quiz-intro">Quelques questions, dix secondes pour répondre et de nouvelles choses à retenir.</p>
       @if (themeLoading) {
         <p class="quiz-status" role="status" aria-live="polite">Chargement des thèmes…</p>
       } @else if (themeLoadError) {
@@ -92,27 +94,13 @@
       <div class="options-grid" role="group" aria-labelledby="current-question">
         @for (option of currentQuestion?.options ?? []; track option.id) {
           <button type="button" class="btn-option"
-            [class.correct]="isAnsweredOrTimeout && option.id === currentQuestion?.correctOptionId"
-            [class.incorrect]="isAnsweredOrTimeout && option.id === selectedOptionId && option.id !== currentQuestion?.correctOptionId"
+            [class.selected]="isAnsweredOrTimeout && option.id === selectedOptionId"
             [attr.aria-pressed]="selectedOptionId === option.id"
             [disabled]="isAnsweredOrTimeout" (click)="answerQuestion(option.id)">
             {{ option.text }}
           </button>
         }
       </div>
-
-      @if (isAnsweredOrTimeout && currentQuestion) {
-        <p class="answer-feedback" role="status" aria-live="polite"
-          [class.correct-feedback]="selectedOptionId === currentQuestion.correctOptionId">
-          @if (selectedOptionId === null) {
-            Temps écoulé !
-          } @else if (selectedOptionId === currentQuestion.correctOptionId) {
-            Bonne réponse !
-          } @else {
-            Mauvaise réponse.
-          }
-        </p>
-      }
 
       <div class="quiz-abandon">
         <button type="button" class="btn-quiz-back" (click)="showThemeSelection()">
@@ -122,21 +110,37 @@
     </div>
   }
 
+  @if (step === 'grading') {
+    <div class="quiz-status" role="status" aria-live="polite">Correction du quiz par le serveur…</div>
+  }
+
   @if (step === 'result') {
     <div class="quiz-results">
       <h2>Quiz Terminé ! 🎉</h2>
 
-      <div class="stats-card">
-        <p><strong>Score :</strong> {{ score }} / {{ questions.length }}</p>
-        <p><strong>Meilleure série de bonnes réponses :</strong> {{ maxStreak }} 🔥</p>
-        <p><strong>Temps de réponse moyen :</strong> {{ averageResponseTimeSeconds.toFixed(2) }} secondes</p>
-      </div>
-      @if (resultSubmissionStatus === 'saving') {
-        <p role="status" aria-live="polite">Enregistrement du résultat…</p>
-      } @else if (resultSubmissionStatus === 'saved') {
-        <p role="status" aria-live="polite">Résultat enregistré.</p>
+      @if (resultSubmissionStatus === 'saved') {
+        <div class="stats-card">
+          <p><strong>Score :</strong> {{ score }} / {{ questions.length }}</p>
+          <p><strong>Meilleure série de bonnes réponses :</strong> {{ maxStreak }} 🔥</p>
+          <p><strong>Temps de réponse moyen :</strong> {{ averageResponseTimeSeconds.toFixed(2) }} secondes</p>
+          <h3>Correction</h3>
+          <ol class="answer-review">
+            @for (question of questions; track question.id; let index = $index) {
+              <li>
+                <span>{{ question.questionText }}</span>
+                <small>Ta réponse : {{ question.options.find(option => option.id === submittedAnswers[index]?.selectedOptionId)?.text ?? 'Aucune réponse' }}</small>
+                <small>Bonne réponse : {{ question.options.find(option => option.id === correctOptionIds[question.id])?.text }}</small>
+              </li>
+            }
+          </ol>
+        </div>
+        @if (isResultPersisted) {
+          <p role="status" aria-live="polite">Résultat calculé et enregistré par le serveur.</p>
+        } @else {
+          <p role="status" aria-live="polite">Résultat calculé par le serveur. Connecte-toi pour l’enregistrer au classement.</p>
+        }
       } @else if (resultSubmissionStatus === 'failed') {
-        <p class="quiz-error" role="alert">Le quiz est terminé, mais le résultat n'a pas pu être enregistré.</p>
+        <p class="quiz-error" role="alert">Le serveur n’a pas pu corriger ce quiz. Vérifie la connexion et recommence pour obtenir un résultat fiable.</p>
       }
 
       <div class="results-actions" role="group" aria-label="Actions de fin de quiz">

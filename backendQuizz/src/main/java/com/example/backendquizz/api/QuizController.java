@@ -4,14 +4,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,135 +28,86 @@ import java.util.Map;
 public class QuizController {
     private final JdbcTemplate jdbcTemplate;
 
-    public QuizController(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    public QuizController(JdbcTemplate jdbcTemplate) { this.jdbcTemplate = jdbcTemplate; }
 
     @GetMapping("/themes")
     public List<ThemeResponse> getThemes() {
-        return jdbcTemplate.query(
-                "SELECT slug, title, category FROM quiz ORDER BY category, title",
-                (resultSet, rowNumber) -> new ThemeResponse(
-                        resultSet.getString("slug"),
-                        resultSet.getString("title"),
-                        resultSet.getString("category")
-                )
-        );
+        return jdbcTemplate.query("SELECT slug, title, category FROM quiz WHERE is_active=true ORDER BY category, title",
+                (rs, row) -> new ThemeResponse(rs.getString("slug"), rs.getString("title"), rs.getString("category")));
     }
 
     @GetMapping("/themes/{themeId}/questions")
     public List<QuestionResponse> getQuestions(@PathVariable String themeId) {
         List<QuestionRow> rows = jdbcTemplate.query(
-                "SELECT question.id AS question_id, question.statement, answer.option_key, "
-                        + "answer.answer_text, answer.is_correct "
-                        + "FROM quiz JOIN question ON question.quiz_id = quiz.id "
-                        + "JOIN answer ON answer.question_id = question.id "
-                        + "WHERE quiz.slug = ? ORDER BY question.id, answer.id",
-                (resultSet, rowNumber) -> new QuestionRow(
-                        resultSet.getLong("question_id"),
-                        resultSet.getString("statement"),
-                        resultSet.getString("option_key"),
-                        resultSet.getString("answer_text"),
-                        resultSet.getBoolean("is_correct")
-                ),
-                themeId
-        );
-
+                "SELECT question.id question_id, question.statement, answer.option_key, answer.answer_text "
+                        + "FROM quiz JOIN question ON question.quiz_id=quiz.id JOIN answer ON answer.question_id=question.id "
+                        + "WHERE quiz.slug=? AND quiz.is_active=true ORDER BY question.id, answer.id",
+                (rs, row) -> new QuestionRow(rs.getLong("question_id"), rs.getString("statement"),
+                        rs.getString("option_key"), rs.getString("answer_text")), themeId);
         Map<Long, QuestionBuilder> questions = new LinkedHashMap<>();
-        for (QuestionRow row : rows) {
-            QuestionBuilder question = questions.computeIfAbsent(
-                    row.id(),
-                    ignored -> new QuestionBuilder(row.id(), row.statement())
-            );
-            question.options().add(new OptionResponse(row.optionKey(), row.answerText()));
-            if (row.correct()) question.setCorrectOptionId(row.optionKey());
-        }
+        for (QuestionRow item : rows) questions.computeIfAbsent(item.id(), id -> new QuestionBuilder(id, item.statement()))
+                .options().add(new OptionResponse(item.optionKey(), item.answerText()));
         return questions.values().stream().map(QuestionBuilder::toResponse).toList();
     }
 
+    @PostMapping("/grade")
+    public GradeResponse gradeGuest(@Valid @RequestBody ResultRequest request) { return grade(request); }
+
     @PostMapping("/results")
-    public ResponseEntity<Void> submitResult(
-            @Valid @RequestBody ResultRequest result,
-            HttpServletRequest request
-    ) {
-        QuizSummary quiz = jdbcTemplate.query(
-                "SELECT quiz.id, COUNT(question.id) AS question_count FROM quiz "
-                        + "LEFT JOIN question ON question.quiz_id = quiz.id "
-                        + "WHERE quiz.slug = ? GROUP BY quiz.id",
-                (resultSet, rowNumber) -> new QuizSummary(
-                        resultSet.getLong("id"),
-                        resultSet.getInt("question_count")
-                ),
-                result.themeId()
-        ).stream().findFirst().orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz theme not found"));
-        if (result.totalQuestions() != quiz.questionCount()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Total question count does not match the quiz");
-        }
-        AuthenticatedUser user = (AuthenticatedUser) request.getAttribute(BearerTokenFilter.USER_ATTRIBUTE);
-        jdbcTemplate.update(
-                "INSERT INTO quiz_result (user_id, quiz_id, score, total_questions, max_streak, average_response_seconds) "
-                        + "VALUES (?, ?, ?, ?, ?, ?)",
-                user.id(),
-                quiz.id(),
-                result.correctAnswersCount(),
-                result.totalQuestions(),
-                result.maxConsecutiveCorrect(),
-                result.averageResponseTimeSeconds()
-        );
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<GradeResponse> submitResult(@Valid @RequestBody ResultRequest request, HttpServletRequest httpRequest) {
+        GradeResponse grade = grade(request);
+        AuthenticatedUser user = (AuthenticatedUser) httpRequest.getAttribute(BearerTokenFilter.USER_ATTRIBUTE);
+        Long quizId = jdbcTemplate.queryForObject("SELECT id FROM quiz WHERE slug=?", Long.class, request.themeId());
+        jdbcTemplate.update("INSERT INTO quiz_result (user_id, quiz_id, score, total_questions, max_streak, average_response_seconds) VALUES (?, ?, ?, ?, ?, ?)",
+                user.id(), quizId, grade.correctAnswersCount(), grade.totalQuestions(), grade.maxConsecutiveCorrect(), grade.averageResponseTimeSeconds());
+        return ResponseEntity.ok(grade);
     }
 
-    public record ThemeResponse(String id, String name, String category) {
-    }
-
-    public record OptionResponse(String id, String text) {
-    }
-
-    public record QuestionResponse(String id, String questionText, List<OptionResponse> options, String correctOptionId) {
-    }
-
-    public record ResultRequest(
-            @NotBlank String themeId,
-            @Min(0) int correctAnswersCount,
-            @Min(0) int maxConsecutiveCorrect,
-            @NotNull @DecimalMin("0.0") @DecimalMax("5.0") Double averageResponseTimeSeconds,
-            @Positive int totalQuestions
-    ) {
-        public ResultRequest {
-            if (correctAnswersCount > totalQuestions || maxConsecutiveCorrect > totalQuestions) {
-                throw new IllegalArgumentException("Quiz statistics exceed total question count");
+    private GradeResponse grade(ResultRequest request) {
+        List<CorrectAnswer> rows = jdbcTemplate.query(
+                "SELECT question.id question_id, answer.option_key FROM quiz "
+                        + "JOIN question ON question.quiz_id=quiz.id JOIN answer ON answer.question_id=question.id "
+                        + "WHERE quiz.slug=? AND quiz.is_active=true AND answer.is_correct=true ORDER BY question.id", (rs, row) ->
+                        new CorrectAnswer(rs.getLong("question_id"), rs.getString("option_key")), request.themeId());
+        if (rows.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz theme not found or empty");
+        if (request.answers().size() != rows.size()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Answer count does not match the quiz");
+        Map<String, String> correct = new LinkedHashMap<>();
+        rows.forEach(row -> correct.put(Long.toString(row.questionId()), row.optionKey()));
+        Map<String, AnswerSubmission> submitted = new LinkedHashMap<>();
+        for (AnswerSubmission answer : request.answers()) {
+            if (!correct.containsKey(answer.questionId()) || submitted.put(answer.questionId(), answer) != null)
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown or duplicate question answer");
+            if (answer.selectedOptionId() != null) {
+                Integer validOption = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM answer WHERE question_id=? AND option_key=?",
+                        Integer.class, Long.parseLong(answer.questionId()), answer.selectedOptionId());
+                if (validOption == null || validOption == 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Answer option does not belong to question");
             }
         }
+        int score = 0, streak = 0, maxStreak = 0;
+        double elapsed = 0;
+        for (CorrectAnswer answer : rows) {
+            AnswerSubmission submittedAnswer = submitted.get(Long.toString(answer.questionId()));
+            if (answer.optionKey().equals(submittedAnswer.selectedOptionId())) { score++; streak++; maxStreak = Math.max(maxStreak, streak); }
+            else streak = 0;
+            elapsed += submittedAnswer.responseTimeSeconds();
+        }
+        return new GradeResponse(score, maxStreak, Math.round(elapsed / rows.size() * 100.0) / 100.0, rows.size(), correct);
     }
 
-    private record QuestionRow(long id, String statement, String optionKey, String answerText, boolean correct) {
-    }
-
-    private record QuizSummary(long id, int questionCount) {
-    }
-
+    public record ThemeResponse(String id, String name, String category) {}
+    public record OptionResponse(String id, String text) {}
+    public record QuestionResponse(String id, String questionText, List<OptionResponse> options) {}
+    public record AnswerSubmission(@NotBlank String questionId, String selectedOptionId,
+                                   @NotNull @DecimalMin("0.0") @DecimalMax("10.0") Double responseTimeSeconds) {}
+    public record ResultRequest(@NotBlank String themeId, @NotEmpty List<@Valid AnswerSubmission> answers) {}
+    public record GradeResponse(int correctAnswersCount, int maxConsecutiveCorrect, double averageResponseTimeSeconds,
+                                int totalQuestions, Map<String, String> correctOptionIds) {}
+    private record QuestionRow(long id, String statement, String optionKey, String answerText) {}
+    private record CorrectAnswer(long questionId, String optionKey) {}
     private static final class QuestionBuilder {
-        private final long id;
-        private final String statement;
-        private final List<OptionResponse> options = new ArrayList<>();
-        private String correctOptionId;
-
-        private QuestionBuilder(long id, String statement) {
-            this.id = id;
-            this.statement = statement;
-        }
-
-        private List<OptionResponse> options() {
-            return options;
-        }
-
-        private void setCorrectOptionId(String value) {
-            correctOptionId = value;
-        }
-
-        private QuestionResponse toResponse() {
-            return new QuestionResponse(Long.toString(id), statement, options, correctOptionId);
-        }
+        private final long id; private final String statement; private final List<OptionResponse> options = new ArrayList<>();
+        private QuestionBuilder(long id, String statement) { this.id = id; this.statement = statement; }
+        private List<OptionResponse> options() { return options; }
+        private QuestionResponse toResponse() { return new QuestionResponse(Long.toString(id), statement, options); }
     }
 }

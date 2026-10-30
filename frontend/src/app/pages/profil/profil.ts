@@ -108,6 +108,9 @@ export class Profil implements OnInit {
     this.authService.logout();
     this.isLoggedIn = false;
     this.username = null;
-    void this.router.navigate(['/login']);
+    this.email = null;
+    this.memberSince = null;
+    this.statistics = null;
+    void this.router.navigate(['/profil']);
   }
 }

@@ -57,7 +57,10 @@ describe('AuthService', () => {
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({ username: 'alice', password: 'pass1234' });
 
-    request.flush(null);
+    request.flush({ token: 'new-session-token' });
+    expect(localStorage.getItem('token')).toBe('new-session-token');
+    expect(service.getCurrentUsername()).toBe('alice');
+    expect(service.isLoggedIn()).toBe(true);
   });
 
   it('removes the token when logging out', () => {

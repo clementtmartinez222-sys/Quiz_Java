@@ -3,13 +3,13 @@
 
   <header class="page-header">
     <div class="header-text">
-      <span class="site-label">NAUTE QUIZCULTURE</span>
+      <span class="site-label">QUIZCULTURE · PALMARÈS</span>
       <h1>Classement</h1>
-      <p>Affronte tes amis et grimpe au sommet du classement.</p>
+      <p>Retrouve les joueurs inscrits et compare les résultats de leurs quiz.</p>
     </div>
 
     <div class="elo-badge">
-      <span class="elo-number">ELO</span>
+      <span class="elo-number">QUIZ</span>
       <span>Classement général</span>
     </div>
   </header>
@@ -20,15 +20,15 @@
       <div class="stat-icon"><svg lucideUsers aria-hidden="true"></svg></div>
       <div>
         <p>Joueurs classés</p>
-        <h2>{{ joueurs.length }}</h2>
+        <h2>{{ loading ? '…' : joueurs.length }}</h2>
       </div>
     </div>
 
     <div class="stat-card">
       <div class="stat-icon"><svg lucideTrophy aria-hidden="true"></svg></div>
       <div>
-        <p>Meilleur ELO</p>
-        <h2>{{ meilleurElo }}</h2>
+        <p>Meilleur score moyen</p>
+        <h2>{{ meilleurScore }} %</h2>
       </div>
     </div>
 
@@ -36,7 +36,7 @@
       <div class="stat-icon"><svg lucideSwords aria-hidden="true"></svg></div>
       <div>
         <p>Parties jouées</p>
-        <h2>{{ totalMatchs }}</h2>
+        <h2>{{ totalQuizzes }}</h2>
       </div>
     </div>
   </section>
@@ -61,9 +61,9 @@
         </div>
 
         <select [(ngModel)]="tri" aria-label="Trier le classement">
-          <option value="elo">Trier par ELO</option>
-          <option value="victoires">Trier par victoires</option>
-          <option value="matchs">Trier par parties</option>
+          <option value="score">Trier par score moyen</option>
+          <option value="quizzes">Trier par quiz joués</option>
+          <option value="correct">Trier par bonnes réponses</option>
         </select>
       </div>
     </div>
@@ -74,9 +74,9 @@
         <tr>
           <th class="rank-column">Rang</th>
           <th>Joueur</th>
-          <th class="number-column">ELO</th>
-          <th class="number-column">Victoires</th>
-          <th class="number-column">Parties</th>
+          <th class="number-column">Score moyen</th>
+          <th class="number-column">Bonnes réponses</th>
+          <th class="number-column">Quiz joués</th>
         </tr>
         </thead>
 
@@ -103,11 +103,11 @@
           <td>
             <div class="player-info">
               <div class="player-avatar">
-                {{ joueur.pseudo.substring(0, 2).toUpperCase() }}
+                {{ joueur.username.substring(0, 2).toUpperCase() }}
               </div>
 
               <div class="player-details">
-                <span class="player-name">{{ joueur.pseudo }}</span>
+                <span class="player-name">{{ joueur.username }}</span>
                 <span class="player-status">
                     <span class="status-dot"></span>
                     Joueur classé
@@ -117,19 +117,25 @@
           </td>
 
           <td class="number-column">
-            <span class="elo-value">{{ joueur.elo }}</span>
+            <span class="elo-value">{{ joueur.averageScore }} %</span>
           </td>
 
           <td class="number-column">
-            <span class="stat-value">{{ joueur.victoires }}</span>
+            <span class="stat-value">{{ joueur.correctAnswers }}</span>
           </td>
 
           <td class="number-column">
-            <span class="stat-value">{{ joueur.matchs }}</span>
+            <span class="stat-value">{{ joueur.quizzesPlayed }}</span>
           </td>
         </tr>
 
-        <tr *ngIf="joueursFiltres.length === 0">
+        <tr *ngIf="loading">
+          <td colspan="5" class="empty-state">Chargement du classement…</td>
+        </tr>
+        <tr *ngIf="loadError">
+          <td colspan="5" class="empty-state">Impossible de charger le classement. <button type="button" (click)="loadPlayers()">Réessayer</button></td>
+        </tr>
+        <tr *ngIf="!loading && !loadError && joueursFiltres.length === 0">
           <td colspan="5" class="empty-state">
             <svg lucideSearchX class="empty-icon" aria-hidden="true"></svg>
             <h3>Aucun joueur trouvé</h3>
@@ -141,7 +147,7 @@
     </div>
 
     <footer class="ranking-footer">
-      <span>Les joueurs sont classés selon leur ELO.</span>
+      <span>Le classement utilise les résultats enregistrés.</span>
       <span>{{ joueursFiltres.length }} résultat(s)</span>
     </footer>
 

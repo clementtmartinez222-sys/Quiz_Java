@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -12,15 +12,9 @@ import { AuthService } from '../../services/auth';
 })
 export class Home implements OnInit {
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
   isLoggedIn = false;
 
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
-  }
-
-  onLogout(): void {
-    this.authService.logout();
-    void this.router.navigate(['/login']);
   }
 }

@@ -23,14 +23,14 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('nav')).toBeTruthy();
     expect(compiled.querySelector('router-outlet')).toBeTruthy();
-    expect(compiled.querySelector('a[href="/home"]')?.textContent).toContain('QuizCulture');
-    expect(compiled.querySelector('a[href="/quizz-solo"]')?.textContent).toContain('Quiz solo');
+    expect(compiled.querySelector('a.logo[href="/home"]')?.textContent).toContain('QuizCulture');
+    expect(compiled.querySelector('a.main-item[href="/quizz-solo"]')?.textContent).toContain('Jeu');
     expect(compiled.querySelector('a[href="/jeu"]')).toBeNull();
     expect(compiled.querySelector('a[href="/fiches"]')).toBeTruthy();
     expect(compiled.querySelector('a[href="/classement"]')).toBeTruthy();
     expect(compiled.querySelector('a[href="/amis"]')).toBeTruthy();
     expect(compiled.querySelector('a[href="/profil"]')).toBeTruthy();
     expect(compiled.querySelector('nav a[href="/contact"]')).toBeNull();
-    expect(compiled.querySelector('app-footer footer a[href="/contact"]')).toBeTruthy();
+    expect(compiled.querySelector('footer.site-footer a[href="/contact"]')).toBeTruthy();
   });
 });

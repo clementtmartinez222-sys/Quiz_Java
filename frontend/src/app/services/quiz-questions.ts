@@ -12,7 +12,6 @@ export interface QuizQuestion {
   id: string;
   questionText: string;
   options: QuizOption[];
-  correctOptionId: string;
 }
 
 export interface QuizTheme {
@@ -70,14 +69,10 @@ export function parseQuizQuestions(value: unknown): QuizQuestion[] {
     const questionText = typeof item['questionText'] === 'string'
       ? item['questionText'].trim()
       : '';
-    const correctOptionId = typeof item['correctOptionId'] === 'string'
-      ? item['correctOptionId'].trim()
-      : '';
     const rawOptions = item['options'];
     if (
       id.length === 0
       || questionText.length === 0
-      || correctOptionId.length === 0
       || !Array.isArray(rawOptions)
       || rawOptions.length < 2
     ) {
@@ -109,15 +104,10 @@ export function parseQuizQuestions(value: unknown): QuizQuestion[] {
       return { id: optionId, text: optionText };
     });
 
-    if (!optionIds.has(correctOptionId)) {
-      throw new Error(`Invalid quiz question "${id}": correct answer is not an available choice.`);
-    }
-
     return {
       id,
       questionText,
       options,
-      correctOptionId,
     };
   });
 }

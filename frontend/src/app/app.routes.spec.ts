@@ -33,7 +33,7 @@ describe('application routes', () => {
     expect(routes.at(-1)).toMatchObject({ path: '**', redirectTo: 'home' });
   });
 
-  it('does not expose the removed placeholder game page', () => {
+  it('does not expose the removed placeholder game route', () => {
     expect(routes.some((route) => route.path === 'jeu')).toBe(false);
   });
 });

@@ -89,7 +89,7 @@ describe('Profil', () => {
     expect(fixture.nativeElement.querySelector('a[routerLink="/register"]')).toBeNull();
   });
 
-  it('logs out and navigates to the login page', () => {
+  it('logs out and returns to the profile entry page', () => {
     authService.isLoggedIn.mockReturnValue(true);
     authService.getCurrentUsername.mockReturnValue('alice');
     fixture = TestBed.createComponent(Profil);
@@ -101,7 +101,7 @@ describe('Profil', () => {
     expect(authService.logout).toHaveBeenCalledOnce();
     expect(component.isLoggedIn).toBe(false);
     expect(component.username).toBeNull();
-    expect(router.navigate).toHaveBeenCalledWith(['/login']);
+    expect(router.navigate).toHaveBeenCalledWith(['/profil']);
   });
 
   it('shows sample profile data only when the development preview query is enabled', () => {

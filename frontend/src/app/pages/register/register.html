@@ -1,12 +1,14 @@
 <div class="register-container auth-page-container form-page-container">
+  <span class="form-eyebrow">TON ESPACE QUIZCULTURE</span>
   <h2>Inscription</h2>
+  <p class="form-intro">Crée ton compte pour garder une trace de tes progrès.</p>
 
   @if (registrationComplete) {
     <div class="feedback-slot registration-success" role="status" aria-live="polite">
-      <p class="success-message">Votre compte a été créé. Vous pouvez maintenant vous connecter.</p>
+      <p class="success-message">Ton compte est prêt, tu es connecté !</p>
     </div>
     <div class="auth-form-actions">
-      <a routerLink="/login" class="button-link auth-success-link">Se connecter</a>
+      <a routerLink="/profil" class="button-link auth-success-link">Voir mon profil</a>
       <a routerLink="/home" class="button-link btn-back">Retour à l'accueil</a>
     </div>
   } @else {

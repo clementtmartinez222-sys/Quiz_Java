@@ -1,13 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { SessionState } from '../../services/session-state';
 import {
   LucideGamepad2,
   LucideBookOpen,
   LucideTrophy,
   LucideUsers,
   LucideUserRound,
-  LucideLogIn,
-
 } from '@lucide/angular';
 
 @Component({
@@ -21,9 +20,11 @@ import {
     LucideTrophy,
     LucideUsers,
     LucideUserRound,
-    LucideLogIn,
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent {}
+export class NavbarComponent {
+  private readonly session = inject(SessionState);
+  readonly isLoggedIn = computed(() => this.session.isAuthenticated());
+}

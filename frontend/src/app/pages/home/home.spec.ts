@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { AuthService } from '../../services/auth';
 
 import { Home } from './home';
@@ -7,13 +7,11 @@ import { Home } from './home';
 describe('Home', () => {
   let component: Home;
   let fixture: ComponentFixture<Home>;
-  let authService: { isLoggedIn: ReturnType<typeof vi.fn>; logout: ReturnType<typeof vi.fn> };
-  let router: Router;
+  let authService: { isLoggedIn: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     authService = {
       isLoggedIn: vi.fn(() => false),
-      logout: vi.fn(),
     };
     await TestBed.configureTestingModule({
       imports: [Home],
@@ -25,8 +23,6 @@ describe('Home', () => {
 
     fixture = TestBed.createComponent(Home);
     component = fixture.componentInstance;
-    router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigate').mockResolvedValue(true);
     fixture.detectChanges();
   });
 
@@ -35,26 +31,24 @@ describe('Home', () => {
   });
 
   it('shows the anonymous actions when there is no stored session', () => {
-    expect(fixture.nativeElement.querySelector('h1').textContent).toContain('Bienvenue');
+    expect(fixture.nativeElement.querySelector('h1').textContent).toContain('culture générale');
     expect(fixture.nativeElement.querySelector('a[routerLink="/quizz-solo"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[routerLink="/fiches"]')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('a[routerLink="/login"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('a[routerLink="/register"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('a[routerLink="/contact"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('button')).toBeNull();
   });
 
-  it('shows the signed-in actions and logs out before navigating to login', () => {
+  it('shows the signed-in home action and keeps account controls on the profile page', () => {
     authService.isLoggedIn.mockReturnValue(true);
     fixture = TestBed.createComponent(Home);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('h1').textContent).toContain('Connecté');
+    expect(fixture.nativeElement.querySelector('h1').textContent).toContain('nouveau défi');
     expect(fixture.nativeElement.querySelector('a[routerLink="/quizz-solo"]')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('a[routerLink="/contact"]')).toBeNull();
-    fixture.nativeElement.querySelector('button').click();
-
-    expect(authService.logout).toHaveBeenCalledOnce();
-    expect(router.navigate).toHaveBeenCalledWith(['/login']);
+    expect(fixture.nativeElement.querySelector('button')).toBeNull();
   });
 });

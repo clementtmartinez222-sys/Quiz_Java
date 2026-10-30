@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,20 +45,27 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
+    @Transactional
+    public ResponseEntity<LoginResponse> register(@Valid @RequestBody RegisterRequest request) {
         if (request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password exceeds 72 UTF-8 bytes");
         }
+        String username = request.username().trim();
         try {
             jdbcTemplate.update(
                     "INSERT INTO app_user (username, password_hash) VALUES (?, ?)",
-                    request.username().trim(),
+                    username,
                     PASSWORD_ENCODER.encode(request.password())
             );
         } catch (DataIntegrityViolationException exception) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username is already in use");
         }
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        UserCredentials user = jdbcTemplate.queryForObject(
+                "SELECT id, username, password_hash FROM app_user WHERE username = ?",
+                USER_MAPPER,
+                username
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(createSession(user));
     }
 
     @PostMapping("/login")
@@ -72,6 +80,10 @@ public class AuthController {
         }
 
         UserCredentials user = users.get(0);
+        return createSession(user);
+    }
+
+    private LoginResponse createSession(UserCredentials user) {
         byte[] randomToken = new byte[32];
         SECURE_RANDOM.nextBytes(randomToken);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(randomToken);

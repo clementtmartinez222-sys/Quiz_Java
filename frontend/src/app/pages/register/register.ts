@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TimeoutError, finalize, take, timeout } from 'rxjs';
 import { API_REQUEST_TIMEOUT_MS } from '../../services/api-config';
@@ -16,6 +16,7 @@ import { maxUtf8Bytes, requiredTrimmed } from '../../shared/form-validators';
 })
 export class Register {
   private authService = inject(AuthService);
+  private readonly router = inject(Router);
   private changeDetector = inject(ChangeDetectorRef);
   private readonly requestTimeoutMs = inject(API_REQUEST_TIMEOUT_MS);
 
@@ -62,6 +63,7 @@ export class Register {
       next: () => {
         this.registrationComplete = true;
         this.changeDetector.markForCheck();
+        void this.router.navigate(['/home']);
       },
       error: (error: unknown) => {
         if (error instanceof TimeoutError) {

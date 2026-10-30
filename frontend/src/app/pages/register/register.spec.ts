@@ -1,9 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { NEVER, Observable, of, Subject, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthService, RegisterCredentials } from '../../services/auth';
+import { AuthService, LoginResponse, RegisterCredentials } from '../../services/auth';
 import { Register } from './register';
 
 describe('Register', () => {
@@ -13,8 +13,8 @@ describe('Register', () => {
 
   beforeEach(async () => {
     register = vi
-      .fn<(credentials: RegisterCredentials) => Observable<void>>()
-      .mockReturnValue(of(undefined));
+      .fn<(credentials: RegisterCredentials) => Observable<LoginResponse>>()
+      .mockReturnValue(of({ token: 'session-token' }));
 
     await TestBed.configureTestingModule({
       imports: [Register],
@@ -23,6 +23,7 @@ describe('Register', () => {
 
     fixture = TestBed.createComponent(Register);
     component = fixture.componentInstance;
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     fixture.detectChanges();
   });
 
@@ -70,7 +71,7 @@ describe('Register', () => {
     expect(component.registerForm.invalid).toBe(true);
   });
 
-  it('submits valid credentials and displays a success state with a login link', () => {
+  it('submits valid credentials and redirects the new authenticated user home', () => {
     component.registerForm.setValue({ username: '  alice  ', password: 'pass1234' });
 
     component.onSubmit();
@@ -78,13 +79,10 @@ describe('Register', () => {
 
     expect(register).toHaveBeenCalledWith({ username: 'alice', password: 'pass1234' });
     expect(component.registrationComplete).toBe(true);
-    expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain(
-      'Votre compte a été créé',
-    );
-    expect(fixture.nativeElement.querySelector('a[routerLink="/login"]')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('a[routerLink="/login"]').classList).toContain(
-      'auth-success-link',
-    );
+    expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain('tu es connecté');
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/home']);
+    expect(fixture.nativeElement.querySelector('a[routerLink="/profil"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[routerLink="/login"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('a[routerLink="/home"]')?.textContent).toContain(
       "Retour à l'accueil",
     );
@@ -138,7 +136,7 @@ describe('Register', () => {
   });
 
   it('keeps the submit button visually unchanged while preventing duplicate requests', () => {
-    const pendingRegistration = new Subject<void>();
+    const pendingRegistration = new Subject<LoginResponse>();
     register.mockReturnValue(pendingRegistration);
     component.registerForm.setValue({ username: 'alice', password: 'pass1234' });
     component.onSubmit();
@@ -151,7 +149,7 @@ describe('Register', () => {
     expect(submitButton.disabled).toBe(false);
     expect(submitButton.textContent).toContain("S'inscrire");
 
-    pendingRegistration.next();
+    pendingRegistration.next({ token: 'session-token' });
     pendingRegistration.complete();
     fixture.detectChanges();
     expect(component.isSubmitting).toBe(false);

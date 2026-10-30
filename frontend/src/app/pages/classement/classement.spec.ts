@@ -1,17 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Classement } from './classement';
+import { ClassementComponent } from './classement';
+import { LeaderboardService } from '../../services/leaderboard';
+import { of } from 'rxjs';
 
-describe('Classement', () => {
-  let component: Classement;
-  let fixture: ComponentFixture<Classement>;
+describe('ClassementComponent', () => {
+  let component: ClassementComponent;
+  let fixture: ComponentFixture<ClassementComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Classement],
+      imports: [ClassementComponent],
+      providers: [{ provide: LeaderboardService, useValue: { getPlayers: () => of([]) } }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Classement);
+    fixture = TestBed.createComponent(ClassementComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

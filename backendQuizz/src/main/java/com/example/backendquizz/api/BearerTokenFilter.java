@@ -29,7 +29,9 @@ public class BearerTokenFilter extends OncePerRequestFilter {
         String path = request.getRequestURI().substring(request.getContextPath().length());
         return !path.equals("/api/profile")
                 && !path.equals("/api/quiz/results")
-                && !path.equals("/api/logout");
+                && !path.equals("/api/logout")
+                && !path.equals("/api/friends")
+                && !path.startsWith("/api/friends/");
     }
 
     @Override
