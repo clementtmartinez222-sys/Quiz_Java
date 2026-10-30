@@ -236,6 +236,7 @@
 
 .friends-action:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .friends-action:focus-visible { outline: 3px solid var(--friends-purple-light); outline-offset: 3px; }
+.friends-action svg { width: 16px; height: 16px; stroke-width: 2; }
 .friends-action-add { background: linear-gradient(135deg, #27b781, #198c69); }
 .friends-action-remove { background: rgba(224, 82, 98, .12); border-color: rgba(224, 82, 98, .42); color: #ff9ba6; }
 .friends-action-remove:hover { background: rgba(224, 82, 98, .2); }

@@ -17,7 +17,7 @@
 
   <section class="stats-grid">
     <div class="stat-card">
-      <div class="stat-icon">♟</div>
+      <div class="stat-icon"><svg lucideUsers aria-hidden="true"></svg></div>
       <div>
         <p>Joueurs classés</p>
         <h2>{{ joueurs.length }}</h2>
@@ -25,7 +25,7 @@
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon">🏆</div>
+      <div class="stat-icon"><svg lucideTrophy aria-hidden="true"></svg></div>
       <div>
         <p>Meilleur ELO</p>
         <h2>{{ meilleurElo }}</h2>
@@ -33,7 +33,7 @@
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon">⚔</div>
+      <div class="stat-icon"><svg lucideSwords aria-hidden="true"></svg></div>
       <div>
         <p>Parties jouées</p>
         <h2>{{ totalMatchs }}</h2>
@@ -52,7 +52,7 @@
 
       <div class="ranking-controls">
         <div class="search-box">
-          <span class="search-icon">⌕</span>
+          <svg lucideSearch class="search-icon" aria-hidden="true"></svg>
           <input
             type="text"
             placeholder="Rechercher un joueur..."
@@ -90,7 +90,8 @@
                 [class.bronze]="i === 2"
               >
                 <ng-container *ngIf="i < 3; else numeroRang">
-                  {{ i === 0 ? '♛' : '♙' }}
+                  <svg *ngIf="i === 0; else medal" lucideCrown [attr.aria-label]="'Premier'"></svg>
+                  <ng-template #medal><svg lucideMedal [attr.aria-label]="i === 1 ? 'Deuxième' : 'Troisième'"></svg></ng-template>
                 </ng-container>
 
                 <ng-template #numeroRang>
@@ -130,7 +131,7 @@
 
         <tr *ngIf="joueursFiltres.length === 0">
           <td colspan="5" class="empty-state">
-            <span class="empty-icon">⌕</span>
+            <svg lucideSearchX class="empty-icon" aria-hidden="true"></svg>
             <h3>Aucun joueur trouvé</h3>
             <p>Essaie avec un autre pseudo.</p>
           </td>

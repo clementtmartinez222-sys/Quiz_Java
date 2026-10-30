@@ -15,10 +15,7 @@
   <section class="friends-search-panel" aria-label="Rechercher des joueurs">
     <label class="friends-search-label" for="friends-search">Rechercher un joueur</label>
     <div class="friends-search-box">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="11" cy="11" r="7"></circle>
-        <path d="m16 16 4 4"></path>
-      </svg>
+      <svg lucideSearch aria-hidden="true"></svg>
       <input id="friends-search" type="search" [(ngModel)]="searchTerm"
              placeholder="Recherche par pseudo..." autocomplete="off">
       <button *ngIf="searchTerm" class="friends-clear" type="button"
@@ -50,7 +47,8 @@
                 [class.friends-action-remove]="user.isFriend"
                 type="button" (click)="toggleFriend(user)"
                 [attr.aria-label]="(user.isFriend ? 'Supprimer ' : 'Ajouter ') + user.username">
-          <span aria-hidden="true">{{ user.isFriend ? '−' : '+' }}</span>
+          <svg *ngIf="user.isFriend; else addFriendIcon" lucideUserMinus aria-hidden="true"></svg>
+          <ng-template #addFriendIcon><svg lucideUserPlus aria-hidden="true"></svg></ng-template>
           {{ user.isFriend ? 'Supprimer' : 'Ajouter' }}
         </button>
       </article>

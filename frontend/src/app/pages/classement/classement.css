@@ -92,7 +92,12 @@
   flex-shrink: 0;
   border-radius: 14px;
   background: rgb(255 255 255 / 12%);
-  font-size: 24px;
+}
+
+.stat-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
 }
 
 .stat-card p {
@@ -157,8 +162,9 @@
 
 .search-icon {
   color: #73758a;
-  font-size: 24px;
-  line-height: 1;
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
 }
 
 .search-box input {
@@ -255,6 +261,12 @@ tbody tr:last-child td {
   color: #d7a522;
 }
 
+.rank svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.2;
+}
+
 .rank.silver {
   color: #9298aa;
 }
@@ -336,7 +348,8 @@ tbody tr:last-child td {
 
 .empty-icon {
   color: #8a70d6;
-  font-size: 32px;
+  width: 32px;
+  height: 32px;
 }
 
 .empty-state h3 {

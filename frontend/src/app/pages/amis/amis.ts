@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideSearch, LucideUserMinus, LucideUserPlus } from '@lucide/angular';
 
 interface QuizUser {
   id: number;
@@ -12,7 +13,7 @@ interface QuizUser {
 @Component({
   selector: 'app-amis',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideSearch, LucideUserMinus, LucideUserPlus],
   templateUrl: './amis.html',
   styleUrl: './amis.css'
 })
