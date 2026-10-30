@@ -282,3 +282,11 @@
   .friends-avatar { width: 42px; height: 42px; flex-basis: 42px; border-radius: 12px; }
   .friends-action { min-width: 0; padding: 9px; font-size: 11px; }
 }
+
+/* Variante claire cohérente avec le reste de QuizCulture. */
+.friends-page { --friends-card: #ffffff; --friends-card-hover: #f7f8ff; --friends-border: #dfe4f5; --friends-text: #182b59; --friends-muted: #667085; --friends-purple: #6555ed; --friends-purple-light: #7055d8; color: var(--friends-text); }
+.friends-summary, .friends-search-panel { background: #ffffff; box-shadow: 0 14px 32px rgba(25, 36, 79, .07); }
+.friends-search-box input { background: #fff; color: #182b59; border-color: #dfe4f5; }
+.friends-user-card { box-shadow: 0 8px 22px rgba(25, 36, 79, .045); }
+.friends-action-add { background: linear-gradient(135deg, #263f83, #7056c8); }
+.friends-action-remove { color: #b4233e; background: #fff5f6; }

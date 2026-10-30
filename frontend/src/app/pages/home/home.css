@@ -1,10 +1,10 @@
 .home-container {
   box-sizing: border-box;
-  width: min(100%, 32rem);
-  margin: 3rem auto;
-  padding: 2rem;
+  width: min(100% - 32px, 38rem);
+  margin: 4rem auto;
+  padding: 3rem;
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: 22px;
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
   text-align: center;
@@ -14,8 +14,11 @@
   margin-top: 0;
   margin-bottom: 1rem;
   color: var(--color-navy);
-  font-size: 1.75rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -1.5px;
 }
+
+.home-eyebrow { display: block; margin-bottom: .9rem; color: var(--color-accent); font-size: .72rem; font-weight: 800; letter-spacing: 2.4px; }
 
 .home-container p {
   margin-bottom: 1.5rem;
@@ -80,8 +83,9 @@
 
 @media (max-width: 480px) {
   .home-container {
-    margin: 1.5rem auto;
-    padding: 1.5rem;
+    width: min(100% - 24px, 38rem);
+    margin: 2rem auto;
+    padding: 2rem 1.4rem;
   }
 }
 
