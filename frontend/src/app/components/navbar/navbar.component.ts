@@ -6,6 +6,7 @@ import {
   LucideTrophy,
   LucideUsers,
   LucideUserRound,
+  LucideLogIn,
 
 } from '@lucide/angular';
 
@@ -20,6 +21,7 @@ import {
     LucideTrophy,
     LucideUsers,
     LucideUserRound,
+    LucideLogIn,
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
