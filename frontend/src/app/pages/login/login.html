@@ -1,7 +1,12 @@
-<div class="login-container">
+<div class="login-container auth-page-container form-page-container">
   <h2>Connexion</h2>
 
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+  <form
+    class="auth-form"
+    [formGroup]="loginForm"
+    (ngSubmit)="onSubmit()"
+    [attr.aria-busy]="isSubmitting"
+  >
     <div class="form-group">
       <label for="username">Nom d'utilisateur</label>
       <input
@@ -9,11 +14,20 @@
         type="text"
         formControlName="username"
         placeholder="Entrez votre nom d'utilisateur"
+        autocomplete="username"
+        [attr.aria-invalid]="
+          loginForm.controls.username.invalid && loginForm.controls.username.touched
+        "
+        [attr.aria-describedby]="
+          loginForm.controls.username.invalid && loginForm.controls.username.touched
+            ? 'username-error'
+            : null
+        "
       />
-      @if (loginForm.get('username')?.invalid && loginForm.get('username')?.touched) {
-        <div class="error">
-          Le nom d'utilisateur est requis.
-        </div>
+      @if (
+        loginForm.controls.username.hasError('required') && loginForm.controls.username.touched
+      ) {
+        <div class="error" id="username-error">Le nom d'utilisateur est requis.</div>
       }
     </div>
 
@@ -24,24 +38,44 @@
         type="password"
         formControlName="password"
         placeholder="Entrez votre mot de passe"
+        autocomplete="current-password"
+        [attr.aria-invalid]="
+          loginForm.controls.password.invalid && loginForm.controls.password.touched
+        "
+        [attr.aria-describedby]="
+          loginForm.controls.password.invalid && loginForm.controls.password.touched
+            ? 'password-error'
+            : null
+        "
       />
-      @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-        <div class="error">
-          Le mot de passe doit contenir au moins 4 caractères.
+      @if (loginForm.controls.password.invalid && loginForm.controls.password.touched) {
+        <div class="error" id="password-error">
+          @if (loginForm.controls.password.hasError('required')) {
+            Le mot de passe est requis.
+          } @else if (loginForm.controls.password.hasError('minlength')) {
+            Le mot de passe doit contenir au moins 4 caractères.
+          }
         </div>
       }
     </div>
 
-    @if (errorMessage) {
-      <div class="error-message">
-        {{ errorMessage }}
-      </div>
-    }
-
-    <button type="submit" [disabled]="loginForm.invalid">Se connecter</button>
+    <div class="feedback-slot auth-server-feedback">
+      @if (errorMessage) {
+        <div class="error-message" role="alert" aria-live="assertive">
+          {{ errorMessage }}
+        </div>
+      }
+    </div>
+    <div class="auth-form-actions">
+      <button type="submit">Se connecter</button>
+      <a routerLink="/home" class="button-link btn-back">Retour à l'accueil</a>
+    </div>
   </form>
 
-  <button routerLink="/register" type="button" class="btn-secondary">Créer un compte</button>
-
-  <button routerLink="/home" type="button" class="btn-back">Retour à l'accueil</button>
+  <div class="auth-switch">
+    <p>Pas encore inscrit ?</p>
+    <a routerLink="/register" class="auth-switch-link"
+      >Créer un compte <span aria-hidden="true">→</span></a
+    >
+  </div>
 </div>

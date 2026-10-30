@@ -8,12 +8,14 @@ import { AmisComponent } from './pages/amis/amis';
 import { Profil } from './pages/profil/profil';
 import { Login } from './pages/login/login';
 import { Register } from './pages/register/register';
+import { QuizzSolo } from './pages/quizz-solo/quizz-solo';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: Home },
   { path: 'contact', component: Contact },
-  { path: 'jeu', component: Jeu },
+  { path: 'jeu', component: QuizzSolo },
+  { path: 'quizz-solo', component: QuizzSolo },
   { path: 'fiches', component: Fiches },
   { path: 'classement', component: ClassementComponent },
   { path: 'amis', component: AmisComponent },

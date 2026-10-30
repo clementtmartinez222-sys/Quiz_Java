@@ -1,48 +1,80 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { TimeoutError, finalize, take, timeout } from 'rxjs';
+import { API_REQUEST_TIMEOUT_MS } from '../../services/api-config';
+import { AuthService, RegisterCredentials } from '../../services/auth';
+import { maxUtf8Bytes, requiredTrimmed } from '../../shared/form-validators';
 
 @Component({
   selector: 'app-register',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
-  styleUrl: './register.css'
 })
 export class Register {
-  private http = inject(HttpClient);
-  private router = inject(Router);
+  private authService = inject(AuthService);
+  private changeDetector = inject(ChangeDetectorRef);
+  private readonly requestTimeoutMs = inject(API_REQUEST_TIMEOUT_MS);
 
   registerForm = new FormGroup({
-    username: new FormControl('', [Validators.required]),
-    password: new FormControl('', [Validators.required, Validators.minLength(4)])
+    username: new FormControl('', { nonNullable: true, validators: [requiredTrimmed] }),
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(72),
+        maxUtf8Bytes(72),
+      ],
+    }),
   });
 
-  errorMessage: string = '';
-  successMessage: string = '';
+  errorMessage = '';
+  isSubmitting = false;
+  registrationComplete = false;
 
-  onSubmit() {
-    if (this.registerForm.valid) {
-      const credentials = this.registerForm.value;
-
-      this.http.post('http://localhost:8080/api/register', credentials).subscribe({
-        next: (response) => {
-          console.log('Inscription réussie !', response);
-          this.successMessage = 'Compte créé avec succès ! Redirection vers la connexion...';
-
-          setTimeout(() => {
-            this.router.navigate(['/login']);
-          }, 1500);
-        },
-        error: (err) => {
-          console.error("Erreur lors de l'inscription", err);
-          this.errorMessage = "Impossible de créer le compte. Ce nom d'utilisateur est peut-être déjà pris.";
-        }
-      });
-
-    } else {
+  onSubmit(): void {
+    if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
+      return;
     }
+
+    if (this.isSubmitting || this.registrationComplete) return;
+
+    this.errorMessage = '';
+    const credentials: RegisterCredentials = {
+      ...this.registerForm.getRawValue(),
+      username: this.registerForm.controls.username.value.trim(),
+    };
+    this.isSubmitting = true;
+
+    this.authService.register(credentials).pipe(
+      timeout({ first: this.requestTimeoutMs }),
+      take(1),
+      finalize(() => {
+        this.isSubmitting = false;
+        this.changeDetector.markForCheck();
+      }),
+    ).subscribe({
+      next: () => {
+        this.registrationComplete = true;
+        this.changeDetector.markForCheck();
+      },
+      error: (error: unknown) => {
+        if (error instanceof TimeoutError) {
+          this.errorMessage = "Nous n'avons pas reçu de confirmation. La création du compte a peut-être abouti ; vérifiez avant de réessayer.";
+        } else if (error instanceof HttpErrorResponse && error.status === 0) {
+          this.errorMessage = 'Impossible de créer le compte pour le moment. Vérifiez votre connexion et réessayez.';
+        } else if (error instanceof HttpErrorResponse && error.status === 409) {
+          this.errorMessage = "Ce nom d'utilisateur est déjà utilisé. Choisissez-en un autre.";
+        } else {
+          this.errorMessage = "L'inscription n'a pas pu aboutir. Veuillez réessayer.";
+        }
+        this.changeDetector.markForCheck();
+      },
+    });
   }
 }

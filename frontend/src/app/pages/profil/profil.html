@@ -1,1 +1,83 @@
-<p>profil works!</p>
+<main class="profile-page" aria-labelledby="profile-title">
+  <section class="profile-card" [class.profile-card-logged-in]="isLoggedIn">
+    @if (isLoggedIn) {
+      <header class="profile-header">
+        <div>
+          <h1 id="profile-title">Mon profil</h1>
+          @if (username) {
+            <p>Bienvenue, {{ username }}.</p>
+          } @else {
+            <p>Bienvenue dans votre espace personnel.</p>
+          }
+        </div>
+        <button type="button" class="profile-button profile-button-danger" (click)="onLogout()">
+          Se déconnecter
+        </button>
+      </header>
+
+      @if (statistics) {
+        <div class="profile-content">
+          <section class="profile-details" aria-labelledby="account-title">
+            <h2 id="account-title">Mon compte</h2>
+            <dl>
+              <div><dt>Nom d’utilisateur</dt><dd>{{ username }}</dd></div>
+              @if (email) {
+                <div><dt>Adresse e-mail</dt><dd>{{ email }}</dd></div>
+              }
+              <div><dt>Membre depuis</dt><dd>{{ memberSince }}</dd></div>
+            </dl>
+          </section>
+
+          <section class="profile-statistics" aria-labelledby="statistics-title">
+            <h2 id="statistics-title">Statistiques personnelles</h2>
+            <div class="statistics-grid">
+              <article class="statistic-card">
+                <span>Quiz joués</span><strong>{{ statistics.quizzesPlayed }}</strong>
+              </article>
+              <article class="statistic-card">
+                <span>Score moyen</span><strong>{{ statistics.averageScore }}</strong>
+              </article>
+              <article class="statistic-card">
+                <span>Bonnes réponses</span><strong>{{ statistics.correctAnswers }}</strong>
+              </article>
+              <article class="statistic-card">
+                <span>Meilleure série</span><strong>{{ statistics.bestStreak }}</strong>
+              </article>
+            </div>
+            <h3>Dernières parties</h3>
+            <ul class="recent-results">
+              @for (result of statistics.recentResults; track result.theme) {
+                <li>
+                  <span><strong>{{ result.theme }}</strong><small>{{ result.playedAt }}</small></span>
+                  <strong>{{ result.score }}</strong>
+                </li>
+              }
+            </ul>
+          </section>
+        </div>
+      } @else {
+        <section class="profile-statistics" aria-labelledby="statistics-title">
+          <h2 id="statistics-title">Statistiques personnelles</h2>
+          @if (profileLoading) {
+            <p role="status" aria-live="polite">Chargement de votre profil…</p>
+          } @else if (profileLoadError) {
+            <p role="alert">Impossible de charger votre profil pour le moment.</p>
+          } @else {
+            <p role="status">
+              L’historique de vos parties et vos statistiques ne sont pas encore consultables.
+            </p>
+          }
+        </section>
+      }
+
+    } @else {
+      <h1 id="profile-title">Votre profil</h1>
+      <p>Connectez-vous ou créez un compte pour accéder à votre espace personnel.</p>
+
+      <div class="profile-actions" role="group" aria-label="Accès au compte">
+        <a routerLink="/login" class="profile-button profile-button-primary">Se connecter</a>
+        <a routerLink="/register" class="profile-button profile-button-secondary">Créer un compte</a>
+      </div>
+    }
+  </section>
+</main>

@@ -1,59 +1,55 @@
-# Frontend
+# Quiz — frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.25.
+Application Angular standalone pour jouer à des quiz, créer un compte, se connecter et envoyer un message de contact. Les thèmes, questions, résultats de quiz et données du profil sont chargés ou enregistrés via l'API backend. Un backend démarré est nécessaire pour utiliser ces parcours ; les tests Angular simulent les réponses HTTP.
 
-## Development server
+## Prérequis et commandes
 
-To start a local development server, run:
-
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Installer les dépendances depuis ce dossier :
 
 ```bash
-ng generate component component-name
+npm install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Démarrer le serveur de développement :
 
 ```bash
-ng generate --help
+npm start
 ```
 
-## Building
+L'application est disponible sur `http://localhost:4200`.
 
-To build the project run:
+Compiler l'application :
 
 ```bash
-ng build
+npm run build
+npx ng build --configuration production
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Exécuter les tests unitaires Vitest :
 
 ```bash
-ng test
+npm test -- --watch=false
 ```
 
-## Running end-to-end tests
+Aucun outil ni script de test end-to-end n'est configuré pour le moment.
 
-For end-to-end (e2e) testing, run:
+## Organisation
 
-```bash
-ng e2e
-```
+- `src/app/pages/` contient les pages et leurs tests.
+- `src/app/services/` contient les accès aux données locales ou HTTP.
+- `src/app/shared/` contient les helpers réutilisés, notamment les validateurs.
+- `src/environments/` configure l'URL de base de l'API et l'activation de l'envoi des résultats.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Les pages sont chargées à la demande par le routeur. `QuizQuestionsService` charge les thèmes et questions depuis l'API et valide leur structure avant de les transmettre au quiz.
 
-## Additional Resources
+## API et intégration backend
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+En développement, l'URL de base est `/api` et `proxy.conf.json` relaie les requêtes vers `http://localhost:8080`, en conservant le préfixe. Le backend expose les routes sous `/api` ; les contrats sont implémentés dans `backendQuizz`.
+
+En production, l'URL de base est également `/api` : l'hébergement devra router ce chemin vers le backend. La durée maximale d'attente HTTP frontend est configurable dans les fichiers `src/environments/` et vaut actuellement 10 secondes.
+
+Routes implémentées : `POST /login` et `POST /register`, `POST /logout`, `GET /profile`, `GET /quiz/themes`, `GET /quiz/themes/{themeId}/questions`, `POST /quiz/results` et `POST /contact`. Les routes profil, résultats et déconnexion requièrent un bearer token. Les identifiants sont créés par l'inscription, les mots de passe sont hachés côté serveur et les sessions expirent après 24 heures.
+
+Le contrat des thèmes est `{ id, name, category }`; celui des questions est `{ id, questionText, options: [{ id, text }], correctOptionId }`. Le résultat contient `themeId`, `correctAnswersCount`, `maxConsecutiveCorrect`, `averageResponseTimeSeconds` et `totalQuestions`. L'envoi est actif en développement et en production, mais uniquement pour un utilisateur connecté.
+
+Les scores et temps envoyés sont calculés dans le navigateur et peuvent être falsifiés. Les statistiques enregistrées sont adaptées à l'historique personnel, mais ne doivent pas servir de source fiable pour un classement compétitif ou des récompenses sans validation côté serveur.
